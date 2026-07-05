@@ -1,0 +1,14 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(60,60)">
+    <path d="M -10,-40 
+             C -40,-40 -40,-9 -10,-3
+             C 28,3 28,34 -10,40
+             C -28,44 -34,28 -31,20"
+          fill="none" stroke="#E0714F" stroke-width="13" stroke-linecap="round"/>
+    <path d="M 10,40 
+             C 40,40 40,9 10,3
+             C -28,-3 -28,-34 10,-40
+             C 28,-44 34,-28 31,-20"
+          fill="none" stroke="#5B2A4A" stroke-width="13" stroke-linecap="round"/>
+  </g>
+</svg>

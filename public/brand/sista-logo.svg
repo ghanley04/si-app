@@ -1,0 +1,20 @@
+<svg width="340" height="200" viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Mark: two interlocking S curves -->
+  <g transform="translate(170,70)">
+    <path d="M -10,-70 
+             C -70,-70 -70,-15 -10,-5
+             C 50,5 50,60 -10,70
+             C -50,77 -60,50 -55,35"
+          fill="none" stroke="#E0714F" stroke-width="22" stroke-linecap="round"/>
+    <path d="M 10,70 
+             C 70,70 70,15 10,5
+             C -50,-5 -50,-60 10,-70
+             C 50,-77 60,-50 55,-35"
+          fill="none" stroke="#5B2A4A" stroke-width="22" stroke-linecap="round"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="170" y="170" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="40" font-weight="600">
+    <tspan fill="#5B2A4A">SI</tspan><tspan fill="#E0714F">sta</tspan>
+  </text>
+</svg>
