@@ -43,7 +43,7 @@ export function SessionGeneratorForm({ courseId }: { courseId: string }) {
       <button
         type="submit"
         disabled={loading}
-        className="rounded-md bg-sista-plum px-4 py-2 text-sm font-medium text-white hover:bg-sista-coral disabled:opacity-50"
+        className="rounded-md bg-sista-plum px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sista-coral focus:outline-none focus:ring-2 focus:ring-sista-plum focus:ring-offset-2 disabled:opacity-50"
       >
         {loading ? "Generating…" : "Generate session"}
       </button>

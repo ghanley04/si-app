@@ -5,8 +5,19 @@ export interface ChatTurn {
 
 export interface GeneratedSession {
   warmUp: string[];
-  groupProblems: { prompt: string; hint?: string }[];
+  groupProblems: { prompt: string; hint?: string; imageRef?: string }[];
   wrapUpCheck: string[];
+}
+
+// A diagram/figure image attached to a generateSession call. `label` is how
+// the model must refer to it in its JSON output (e.g. "A"); `id` is the
+// caller's own material_images.id, used to translate the model's label back
+// to a real image without trusting anything the model echoes verbatim.
+export interface SourceImage {
+  id: string;
+  label: string;
+  base64: string;
+  mimeType: string;
 }
 
 // Vendor-agnostic surface the rest of the app talks to. Swapping LLM providers
@@ -15,7 +26,11 @@ export interface GeneratedSession {
 export interface AiProvider {
   embed(text: string): Promise<number[]>;
   chat(systemPrompt: string, history: ChatTurn[]): Promise<string>;
-  generateSession(systemPrompt: string, userPrompt: string): Promise<GeneratedSession>;
+  generateSession(
+    systemPrompt: string,
+    userPrompt: string,
+    images?: SourceImage[]
+  ): Promise<GeneratedSession>;
   ocrImage(imageBase64: string, mimeType: string): Promise<string>;
 }
 

@@ -1,11 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { MaterialUploader } from "@/components/material-uploader";
-
-const statusLabel: Record<string, string> = {
-  pending: "Processing…",
-  processed: "Ready",
-  error: "Failed",
-};
+import { MaterialsList } from "@/components/materials-list";
 
 export default async function CourseMaterialsPage({
   params,
@@ -15,9 +10,19 @@ export default async function CourseMaterialsPage({
   const { id } = await params;
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: course } = await supabase
+    .from("courses")
+    .select("created_by")
+    .eq("id", id)
+    .maybeSingle();
+
   const { data: materials } = await supabase
     .from("materials")
-    .select("id, filename, status, error_message, created_at")
+    .select("id, filename, status, error_message, uploaded_by, created_at")
     .eq("course_id", id)
     .order("created_at", { ascending: false });
 
@@ -33,26 +38,11 @@ export default async function CourseMaterialsPage({
       </section>
 
       <section>
-        {materials && materials.length > 0 ? (
-          <ul className="divide-y divide-sista-border rounded-md border border-sista-border bg-white">
-            {materials.map((m) => (
-              <li key={m.id} className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm font-medium">{m.filename}</span>
-                <span
-                  className={
-                    "text-xs " +
-                    (m.status === "error" ? "text-red-600" : "text-sista-muted")
-                  }
-                  title={m.error_message ?? undefined}
-                >
-                  {statusLabel[m.status] ?? m.status}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-sista-muted">No materials uploaded yet.</p>
-        )}
+        <MaterialsList
+          materials={materials ?? []}
+          currentUserId={user?.id}
+          courseCreatedBy={course?.created_by}
+        />
       </section>
     </div>
   );

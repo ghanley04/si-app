@@ -1,9 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { AiProvider, ChatTurn, GeneratedSession } from "./provider";
+import type { AiProvider, ChatTurn, GeneratedSession, SourceImage } from "./provider";
 
 const EMBEDDING_MODEL = "gemini-embedding-001";
 const EMBEDDING_DIMENSIONS = 768;
-const CHAT_MODEL = "gemini-2.0-flash";
+const CHAT_MODEL = "gemini-2.5-flash-lite";
 
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
@@ -86,7 +86,8 @@ export class GeminiProvider implements AiProvider {
 
   async generateSession(
     systemPrompt: string,
-    userPrompt: string
+    userPrompt: string,
+    images: SourceImage[] = []
   ): Promise<GeneratedSession> {
     const model = this.client.getGenerativeModel({
       model: CHAT_MODEL,
@@ -94,7 +95,12 @@ export class GeminiProvider implements AiProvider {
       generationConfig: { responseMimeType: "application/json" },
     });
 
-    const result = await withRetry(() => model.generateContent(userPrompt));
+    const parts = [
+      { text: userPrompt },
+      ...images.map((img) => ({ inlineData: { data: img.base64, mimeType: img.mimeType } })),
+    ];
+
+    const result = await withRetry(() => model.generateContent(parts));
     const text = result.response.text();
 
     try {

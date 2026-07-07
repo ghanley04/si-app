@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { CourseTabs } from "@/components/course-tabs";
 
 export default async function CourseLayout({
   children,
@@ -43,17 +44,7 @@ export default async function CourseLayout({
         </h1>
         {course.term && <p className="text-sm text-sista-muted">{course.term}</p>}
       </div>
-      <nav className="flex gap-4 border-b border-sista-border text-sm">
-        <Link href={`/courses/${id}`} className="px-1 pb-2 hover:underline">
-          Materials
-        </Link>
-        <Link href={`/courses/${id}/chat`} className="px-1 pb-2 hover:underline">
-          Chat
-        </Link>
-        <Link href={`/courses/${id}/sessions/new`} className="px-1 pb-2 hover:underline">
-          Practice sessions
-        </Link>
-      </nav>
+      <CourseTabs courseId={id} />
       {children}
     </div>
   );

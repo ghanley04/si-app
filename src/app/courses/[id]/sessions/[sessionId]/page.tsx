@@ -19,6 +19,29 @@ export default async function SessionWorksheetPage({
 
   const content = session.content as GeneratedSession;
 
+  const imageRefIds = [
+    ...new Set(
+      content.groupProblems
+        ?.map((p) => p.imageRef)
+        .filter((id): id is string => Boolean(id)) ?? []
+    ),
+  ];
+
+  const imageUrls: Record<string, string> = {};
+  if (imageRefIds.length > 0) {
+    const { data: images } = await supabase
+      .from("material_images")
+      .select("id, storage_path")
+      .in("id", imageRefIds);
+
+    for (const image of images ?? []) {
+      const { data: signed } = await supabase.storage
+        .from("materials")
+        .createSignedUrl(image.storage_path, 60 * 60);
+      if (signed) imageUrls[image.id] = signed.signedUrl;
+    }
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -42,6 +65,13 @@ export default async function SessionWorksheetPage({
             <li key={i}>
               <p>{p.prompt}</p>
               {p.hint && <p className="text-xs text-sista-muted pl-5">Hint: {p.hint}</p>}
+              {p.imageRef && imageUrls[p.imageRef] && (
+                <img
+                  src={imageUrls[p.imageRef]}
+                  alt="Referenced diagram"
+                  className="max-w-md rounded border mt-2"
+                />
+              )}
             </li>
           ))}
         </ol>

@@ -43,12 +43,12 @@ export function MaterialUploader({ courseId }: { courseId: string }) {
         name="file"
         accept=".pdf,.txt,.md,.jpg,.jpeg,.png,.heic,.heif,.webp"
         required
-        className="text-sm file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-sista-plum file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-sista-coral"
+        className="text-sm file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-sista-plum file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white file:shadow-sm hover:file:bg-sista-coral"
       />
       <button
         type="submit"
         disabled={status === "uploading"}
-        className="rounded-md bg-sista-plum px-3 py-1.5 text-sm font-medium text-white hover:bg-sista-coral disabled:opacity-50"
+        className="rounded-md bg-sista-plum px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sista-coral focus:outline-none focus:ring-2 focus:ring-sista-plum focus:ring-offset-2 disabled:opacity-50"
       >
         {status === "uploading" ? "Processing…" : "Upload"}
       </button>
