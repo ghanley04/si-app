@@ -301,7 +301,24 @@
   .bubble { max-width:80%; font-size:14px; line-height:1.6; padding:12px 15px; }
   .bubble.user { align-self:flex-end; background:var(--user-bg); color:var(--user-fg); border-radius:15px 15px 4px 15px; }
   .bubble.assistant { align-self:flex-start; background:var(--panel-bg); color:var(--text);
-    border:1px solid var(--border); border-radius:15px 15px 15px 4px; white-space:pre-wrap; }
+    border:1px solid var(--border); border-radius:15px 15px 15px 4px; }
+  .bubble.user { white-space:pre-wrap; }
+  /* rendered markdown (fmt) — used in AI answers, chat, leader replies */
+  .md-p { margin:0 0 9px; }
+  .md-p:last-child, .md-list:last-child, .md-h:last-child, .md-math:last-child { margin-bottom:0; }
+  .md-h { font-weight:700; line-height:1.35; margin:14px 0 7px; }
+  .md-h:first-child { margin-top:0; }
+  .md-h1 { font-size:1.28em; } .md-h2 { font-size:1.17em; } .md-h3 { font-size:1.06em; }
+  .md-h4, .md-h5, .md-h6 { font-size:1em; }
+  .md-list { margin:0 0 9px; padding-left:22px; } .md-list li { margin:3px 0; }
+  .md-code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.9em;
+    background:var(--surface-2); padding:1px 5px; border-radius:5px; }
+  .md-pre { background:var(--surface-2); border:1px solid var(--border); border-radius:9px;
+    padding:11px 13px; overflow-x:auto; margin:0 0 9px; }
+  .md-pre code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; background:none; padding:0; }
+  .md-math { margin:6px 0 10px; overflow-x:auto; }
+  .qans-body .katex, .bubble .katex { font-size:1.04em; }
+  .katex-display { margin:.4em 0; overflow-x:auto; overflow-y:hidden; }
   .sources { margin-top:11px; display:flex; gap:7px; flex-wrap:wrap; }
   .chip { font-size:11.5px; font-weight:600; padding:4px 10px; border-radius:999px;
     background:var(--accent-soft-bg); color:var(--accent-soft-fg); display:inline-flex; align-items:center; gap:5px; }
@@ -346,7 +363,7 @@
   .qans-lbl { font-size:11px; letter-spacing:.05em; text-transform:uppercase; font-weight:700;
     color:var(--accent-solid-fg); display:flex; align-items:center; gap:6px; margin-bottom:6px; }
   .qans-lbl .i { width:13px; height:13px; }
-  .qans-body { font-size:13.5px; line-height:1.6; color:var(--text); white-space:pre-wrap; }
+  .qans-body { font-size:13.5px; line-height:1.6; color:var(--text); }
   .qactions { margin-top:13px; display:flex; flex-wrap:wrap; gap:9px; align-items:center; }
   .qanswer-box { margin-top:13px; display:flex; flex-direction:column; gap:9px; }
   .qanswer-box textarea { min-height:76px; }
@@ -578,6 +595,58 @@
   .prep-panel-head h2 { font-size:18px; font-weight:650; margin:0; color:var(--text); }
   .prep-panel-head p { font-size:13px; color:var(--text-muted); line-height:1.55; margin:4px 0 0; max-width:560px; }
   .prep-panel .plan { margin-top:16px; }
+
+  /* ---------- grade predictor ---------- */
+  .grade-panel { margin-top:22px; background:var(--surface-2); border:1px solid var(--border); border-radius:16px; padding:20px 22px 22px; }
+  .grade-panel-head h2 { font-size:18px; font-weight:650; margin:0; color:var(--text); }
+  .grade-panel-head .ts { font-size:12px; color:var(--text-muted); margin-top:3px; }
+  .grade-warn { display:flex; align-items:flex-start; gap:7px; margin:14px 0 0; font-size:12.5px; line-height:1.5;
+    color:var(--text-muted); background:var(--panel-bg); border:1px solid var(--border); border-radius:10px; padding:10px 12px; }
+  .grade-warn .i { width:15px; height:15px; flex:none; margin-top:1px; color:var(--accent-solid-fg); }
+  .grade-table { margin-top:16px; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:var(--panel-bg); }
+  .grade-row { display:flex; align-items:center; gap:12px; padding:11px 14px; }
+  .grade-row:not(:last-child) { border-bottom:1px solid var(--border); }
+  .grade-cat { min-width:0; flex:1; display:flex; flex-direction:column; gap:2px; }
+  .grade-name { font-size:14px; font-weight:600; color:var(--text); }
+  .grade-weight { font-size:12px; color:var(--text-muted); }
+  .grade-score { display:flex; align-items:center; gap:5px; flex:none; }
+  .grade-score input { width:74px; text-align:right; font:inherit; font-size:14px; font-weight:600;
+    padding:7px 9px; border-radius:9px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); }
+  .grade-score input:focus { outline:none; border-color:var(--accent-solid-fg); box-shadow:0 0 0 1px var(--accent-solid-fg); }
+  .grade-score .pct { font-size:13px; color:var(--text-muted); width:12px; }
+  .grade-result { margin-top:18px; background:var(--accent-soft-bg); border:1px solid var(--border); border-radius:14px;
+    padding:18px 20px; text-align:center; }
+  .grade-big { display:flex; align-items:baseline; justify-content:center; gap:14px; flex-wrap:wrap; }
+  .grade-letter { font-size:40px; font-weight:800; letter-spacing:-.02em; color:var(--accent-soft-fg); line-height:1; }
+  .grade-pct { font-size:26px; font-weight:700; color:var(--text); line-height:1; }
+  .grade-sub { font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-top:10px; max-width:460px;
+    margin-left:auto; margin-right:auto; }
+  .grade-scalenote { font-size:12px; color:var(--text-muted); margin-top:10px; text-align:center; }
+  .grade-notes { margin-top:16px; font-size:13px; color:var(--text); line-height:1.55; background:var(--panel-bg);
+    border:1px solid var(--border); border-radius:12px; padding:13px 15px; }
+  .grade-notes .lbl { display:flex; align-items:center; gap:7px; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    font-weight:700; color:var(--accent-solid-fg); margin-bottom:6px; }
+  .grade-notes .lbl .i { width:14px; height:14px; }
+
+  .grade-target { margin-top:16px; background:var(--panel-bg); border:1px solid var(--border); border-radius:14px; padding:15px 17px; }
+  .grade-target-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .grade-target-head .lbl { display:flex; align-items:center; gap:7px; font-size:13.5px; font-weight:650; color:var(--text); }
+  .grade-target-head .lbl .i { width:15px; height:15px; color:var(--accent-solid-fg); }
+  .grade-target-head select { margin-left:auto; font:inherit; font-size:13.5px; font-weight:600; color:var(--text);
+    padding:7px 30px 7px 11px; border-radius:9px; border:1px solid var(--border); background:var(--surface-2);
+    cursor:pointer; -webkit-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat; background-position:right 9px center; background-size:15px; }
+  .grade-target-head select:focus { outline:none; border-color:var(--accent-solid-fg); box-shadow:0 0 0 1px var(--accent-solid-fg); }
+  .grade-target-result { margin-top:12px; font-size:13.5px; line-height:1.55; }
+  .grade-target-result .need { color:var(--text); }
+  .grade-target-result .need strong { color:var(--accent-solid-fg); font-size:15px; }
+  .grade-target-result .ok, .grade-target-result .miss { display:flex; align-items:flex-start; gap:7px; color:var(--text); }
+  .grade-target-result .ok .i, .grade-target-result .miss .i { width:15px; height:15px; flex:none; margin-top:2px; }
+  .grade-target-result .ok .i { color:var(--accent-solid-fg); }
+  .grade-target-result .miss .i { color:var(--text-muted); }
+  @media (max-width:520px){ .grade-letter { font-size:34px; } .grade-pct { font-size:22px; }
+    .grade-target-head select { margin-left:0; } }
 
   /* ---------- contacts ---------- */
   .ct-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:22px; }
@@ -1094,6 +1163,8 @@
     c.contacts.forEach(backfillContact);
     if (c.studyPlan === undefined) c.studyPlan = null;
     if (!c.prepPlans) c.prepPlans = {};
+    if (c.gradeScheme === undefined) c.gradeScheme = null;
+    if (!c.gradeInputs) c.gradeInputs = {};
     return c;
   }
   // Older saved contacts predate first/last names, semesters, and provenance.
@@ -1262,11 +1333,16 @@
       return { content: body, citations: citations };
     }
 
-    // Ground Claude in every uploaded material for this course.
+    // Ground Claude in every uploaded material for this course, then let it
+    // supplement with the web so the answer isn't limited to what's uploaded.
     var context = course.materials.map(function (m) { return "### " + m.filename + "\n" + m.text; }).join("\n\n");
-    var system = "You are an SI (Supplemental Instruction) study companion. Answer the student's question using ONLY the course materials provided. If the materials don't cover it, say so plainly. Be concise, clear, and encouraging.";
+    var tools = [{ type: "web_search_20250305", name: "web_search", max_uses: 4 }];
+    var system = "You are an SI (Supplemental Instruction) study companion. Answer the student's question in two connected ways. " +
+      "First, ground your answer in the COURSE MATERIALS and point the student to where they can find it — name the specific material (filename) and, when you can, the relevant section, page, or topic. " +
+      "Then go further: use web search to bring in accurate, up-to-date information from the internet that explains the concept more fully, adds worked examples, or covers what the materials leave out. Prefer reputable, authoritative sources and briefly note where the outside information comes from. " +
+      "If the materials don't cover the question at all, say so plainly, then answer it from reliable web sources. Be concise, clear, and encouraging.";
     var user = "COURSE MATERIALS:\n" + context + "\n\nSTUDENT QUESTION: " + question;
-    var content = await callClaude({ system: system, user: user });
+    var content = await callClaude({ system: system, user: user, tools: tools, maxTokens: 4096 });
     return { content: content, citations: citations };
   }
   async function generateSession(course, topic) {
@@ -1722,6 +1798,129 @@
     } };
   }
 
+  // ---------- grade predictor ----------
+  // Standard letter cutoffs, used only when the syllabus doesn't spell out its own.
+  var DEFAULT_GRADE_SCALE = [
+    { grade: "A", min: 93 }, { grade: "A-", min: 90 }, { grade: "B+", min: 87 },
+    { grade: "B", min: 83 }, { grade: "B-", min: 80 }, { grade: "C+", min: 77 },
+    { grade: "C", min: 73 }, { grade: "C-", min: 70 }, { grade: "D+", min: 67 },
+    { grade: "D", min: 63 }, { grade: "D-", min: 60 }, { grade: "F", min: 0 }
+  ];
+
+  // Pull the weighted grading breakdown (and any letter-grade scale) from the
+  // syllabus so the student can plug in hypothetical scores and see their grade.
+  async function extractGradeScheme(course) {
+    if (!claudeReady()) return localExtractGradeScheme(course);
+    var context = course.materials.map(function (m) { return "### " + m.filename + "\n" + m.text; }).join("\n\n");
+    var schema = {
+      type: "object",
+      properties: {
+        title: { type: "string" },
+        categories: { type: "array", items: {
+          type: "object",
+          properties: { name: { type: "string" }, weight: { type: "number" } },
+          required: ["name", "weight"], additionalProperties: false
+        } },
+        scale: { type: "array", items: {
+          type: "object",
+          properties: { grade: { type: "string" }, min: { type: "number" } },
+          required: ["grade", "min"], additionalProperties: false
+        } },
+        notes: { type: "string" }
+      },
+      required: ["title", "categories", "scale", "notes"], additionalProperties: false
+    };
+    var system = "You read a course syllabus and extract exactly how the final grade is computed. Return the graded categories with each one's weight as a percentage number (e.g. Homework 20 -> weight 20). If the syllabus lists sub-items (Midterm 1, Midterm 2, Final), keep them separate. The weights should reflect the syllabus; they normally sum to 100. Also extract the letter-grade scale if the syllabus gives one, as {grade, min} where min is the lowest percentage that still earns that grade (highest grades first); return an empty array if the syllabus doesn't state a scale. In notes, mention anything that affects the calculation (dropped lowest score, curve, extra credit, attendance thresholds) or say it's a straightforward weighted average. Ground everything in the syllabus; never invent categories or weights that aren't there.";
+    var user = "COURSE MATERIALS:\n" + context + "\n\nExtract the grading breakdown for this course.";
+    var raw = await callClaude({ system: system, user: user, schema: schema, maxTokens: 2048 });
+    return { createdAt: Date.now(), content: JSON.parse(raw) };
+  }
+
+  // Fallback with no API key: scrape "Category ... 25%" lines from the materials.
+  function localExtractGradeScheme(course) {
+    var text = course.materials.map(function (m) { return m.text; }).join("\n");
+    var cats = [], seen = {};
+    var re = /([A-Za-z][A-Za-z0-9 ,/&()'-]{1,38}?)\s*[:=\-–]?\s*(\d{1,3}(?:\.\d+)?)\s*%/g, m;
+    while ((m = re.exec(text)) !== null) {
+      var name = m[1].replace(/\s+/g, " ").trim().replace(/[\-–:]+$/, "").trim();
+      var w = parseFloat(m[2]);
+      if (!name || w <= 0 || w > 100) continue;
+      var key = name.toLowerCase();
+      if (seen[key]) continue;
+      seen[key] = true;
+      cats.push({ name: name, weight: w });
+    }
+    return { createdAt: Date.now(), content: {
+      title: course.name + " — grading",
+      categories: cats,
+      scale: [],
+      notes: cats.length
+        ? "Pulled from percentage lines in your materials — double-check the categories and weights against the syllabus. Add your Anthropic API key for a more reliable read."
+        : "Couldn't find a percentage breakdown automatically. Add your Anthropic API key and upload the syllabus, or add categories by hand."
+    } };
+  }
+
+  function letterForPct(scale, pct) {
+    var s = (scale && scale.length) ? scale : DEFAULT_GRADE_SCALE;
+    s = s.slice().sort(function (a, b) { return b.min - a.min; });
+    for (var i = 0; i < s.length; i++) { if (pct >= s[i].min) return s[i].grade; }
+    return s.length ? s[s.length - 1].grade : "—";
+  }
+
+  // Weighted average over only the categories the student has filled in, so a
+  // partial entry shows a fair standing and a full entry gives the exact result.
+  function computeGrade(scheme, inputs) {
+    var cats = (scheme.content.categories || []);
+    var totalWeight = cats.reduce(function (a, c) { return a + (Number(c.weight) || 0); }, 0);
+    var accounted = 0, earned = 0, filled = 0;
+    cats.forEach(function (c) {
+      var v = inputs[c.name];
+      if (v === undefined || v === null || v === "") return;
+      var score = Number(v); if (isNaN(score)) return;
+      var w = Number(c.weight) || 0;
+      accounted += w; earned += w * score / 100; filled++;
+    });
+    var pct = accounted > 0 ? (earned / accounted) * 100 : null;
+    return { totalWeight: totalWeight, accounted: accounted, filled: filled,
+      pct: pct, letter: pct === null ? null : letterForPct(scheme.content.scale, pct) };
+  }
+
+  // Target grades to offer in the reverse calculator (syllabus scale if present,
+  // else the standard one), highest first and dropping the 0% floor (usually F).
+  function targetOptions(scheme) {
+    var scale = (scheme.content.scale && scheme.content.scale.length) ? scheme.content.scale : DEFAULT_GRADE_SCALE;
+    return scale.filter(function (g) { return g.min > 0; })
+      .slice().sort(function (a, b) { return b.min - a.min; });
+  }
+  function currentTarget(course) {
+    if (course.gradeTarget !== undefined && course.gradeTarget !== null && course.gradeTarget !== "")
+      return Number(course.gradeTarget);
+    var opts = targetOptions(course.gradeScheme);
+    return opts.length ? opts[0].min : 90;
+  }
+
+  // Reverse calc: treating blank categories as "remaining", work out the average
+  // score needed across them to finish the whole course at targetPct.
+  function computeTarget(scheme, inputs, targetPct) {
+    var cats = (scheme.content.categories || []);
+    var totalWeight = cats.reduce(function (a, c) { return a + (Number(c.weight) || 0); }, 0);
+    var earned = 0, remainingWeight = 0, remainingNames = [];
+    cats.forEach(function (c) {
+      var w = Number(c.weight) || 0;
+      var v = inputs[c.name];
+      if (v === undefined || v === null || v === "" || isNaN(Number(v))) { remainingWeight += w; remainingNames.push(c.name); }
+      else { earned += w * Number(v) / 100; }
+    });
+    var neededTotalPoints = (targetPct / 100) * totalWeight;
+    var required = remainingWeight > 0 ? ((neededTotalPoints - earned) / remainingWeight) * 100 : null;
+    return {
+      totalWeight: totalWeight, remainingWeight: remainingWeight, remainingNames: remainingNames,
+      required: required,
+      maxReachable: totalWeight > 0 ? ((earned + remainingWeight) / totalWeight) * 100 : null,
+      guaranteedMin: totalWeight > 0 ? (earned / totalWeight) * 100 : null
+    };
+  }
+
   // ---------- course contacts (from a syllabus) ----------
   var EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 
@@ -2140,6 +2339,101 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
+
+  // ---------- lightweight markdown + math rendering ----------
+  // AI answers come back as markdown with LaTeX ($…$ / $$…$$). esc() alone
+  // would show the raw ** and $$; fmt() turns a safe subset of markdown into
+  // HTML and leaves math delimiters intact for KaTeX (typesetMath) to render.
+  function fmtInline(s) {
+    return s
+      .replace(/`([^`]+)`/g, function (_, c) { return '<code class="md-code">' + c + '</code>'; })
+      .replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/(^|[^*])\*(?!\s)([^*\n]+?)\*/g, '$1<em>$2</em>')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  }
+  function fmt(src) {
+    var text = String(src == null ? "" : src);
+    // Stash math and fenced code so markdown/escaping can't mangle them.
+    var math = [], code = [];
+    text = text.replace(/\$\$([\s\S]+?)\$\$/g, function (_, x) { return "M" + (math.push("$$" + x + "$$") - 1) + ""; });
+    text = text.replace(/\$([^$\n]+?)\$/g, function (_, x) { return "M" + (math.push("$" + x + "$") - 1) + ""; });
+    text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, function (_, lang, body) {
+      return "C" + (code.push('<pre class="md-pre"><code>' + esc(body.replace(/\n$/, "")) + '</code></pre>') - 1) + "";
+    });
+    text = esc(text);
+    var lines = text.split("\n"), html = "", i = 0;
+    var isUl = function (l) { return /^\s*[-*]\s+/.test(l); };
+    var isOl = function (l) { return /^\s*\d+\.\s+/.test(l); };
+    while (i < lines.length) {
+      var line = lines[i];
+      if (/^\s*$/.test(line)) { i++; continue; }
+      var h = line.match(/^(#{1,6})\s+(.*)$/);
+      if (h) { html += '<div class="md-h md-h' + h[1].length + '">' + fmtInline(h[2]) + '</div>'; i++; continue; }
+      if (/^M\d+\s*$/.test(line)) { html += '<div class="md-math">' + line.trim() + '</div>'; i++; continue; }
+      if (isUl(line)) {
+        html += '<ul class="md-list">';
+        while (i < lines.length && isUl(lines[i])) { html += '<li>' + fmtInline(lines[i].replace(/^\s*[-*]\s+/, "")) + '</li>'; i++; }
+        html += '</ul>'; continue;
+      }
+      if (isOl(line)) {
+        html += '<ol class="md-list">';
+        while (i < lines.length && isOl(lines[i])) { html += '<li>' + fmtInline(lines[i].replace(/^\s*\d+\.\s+/, "")) + '</li>'; i++; }
+        html += '</ol>'; continue;
+      }
+      var para = [];
+      while (i < lines.length && !/^\s*$/.test(lines[i]) && !isUl(lines[i]) && !isOl(lines[i]) && !/^#{1,6}\s+/.test(lines[i]) && !/^M\d+\s*$/.test(lines[i])) {
+        para.push(fmtInline(lines[i])); i++;
+      }
+      html += '<p class="md-p">' + para.join("<br>") + "</p>";
+    }
+    return html
+      .replace(/C(\d+)/g, function (_, n) { return code[+n]; })
+      .replace(/M(\d+)/g, function (_, n) { return esc(math[+n]); });
+  }
+
+  // Loads KaTeX (CSS + core + auto-render) once, on demand, from a CDN.
+  var katexLoading = null;
+  function loadKatex() {
+    if (window.renderMathInElement) return Promise.resolve(window.renderMathInElement);
+    if (katexLoading) return katexLoading;
+    var base = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/";
+    var loadScript = function (src) {
+      return new Promise(function (resolve, reject) {
+        var s = document.createElement("script"); s.src = src;
+        s.onload = resolve; s.onerror = function () { reject(new Error("katex load failed")); };
+        document.head.appendChild(s);
+      });
+    };
+    katexLoading = new Promise(function (resolve, reject) {
+      if (!document.getElementById("katex-css")) {
+        var link = document.createElement("link");
+        link.id = "katex-css"; link.rel = "stylesheet"; link.href = base + "katex.min.css";
+        document.head.appendChild(link);
+      }
+      loadScript(base + "katex.min.js")
+        .then(function () { return loadScript(base + "contrib/auto-render.min.js"); })
+        .then(function () { resolve(window.renderMathInElement); })
+        .catch(reject);
+    });
+    return katexLoading;
+  }
+  // Renders any $…$ / $$…$$ math inside el once KaTeX is available.
+  function typesetMath(el) {
+    if (!el || !/\$/.test(el.textContent || "")) return;
+    loadKatex().then(function (renderMathInElement) {
+      try {
+        renderMathInElement(el, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\[", right: "\\]", display: true },
+            { left: "$", right: "$", display: false },
+            { left: "\\(", right: "\\)", display: false }
+          ],
+          throwOnError: false
+        });
+      } catch (e) { /* leave the raw text if typesetting fails */ }
+    }).catch(function () { /* offline: raw $…$ stays visible */ });
+  }
   var courseList = document.getElementById("courseList");
   var pageEl = document.getElementById("page");
   var authEl = document.getElementById("auth");
@@ -2224,6 +2518,7 @@
       else if (view.page === "lclass" && currentClassroom()) pageEl.innerHTML = leaderClassroomPage(currentClassroom());
       else { view.page = "home"; pageEl.innerHTML = leaderHomePage(); }
       wirePage();
+      typesetMath(pageEl);
       return;
     }
     if (view.page === "new") pageEl.innerHTML = newCoursePage();
@@ -2233,6 +2528,7 @@
       pageEl.innerHTML = studentClassroomPage(currentClassroom());
     else { view.page = "courses"; pageEl.innerHTML = coursesPage(); }
     wirePage();
+    typesetMath(pageEl);
   }
 
   // ============================================================
@@ -2310,7 +2606,7 @@
       var src = (m.citations && m.citations.length)
         ? '<div class="sources">' + m.citations.map(function (c) { return '<span class="chip">' + IC.file + '[' + c.index + '] ' + esc(c.filename) + '</span>'; }).join("") + '</div>'
         : "";
-      return '<div class="bubble ' + m.role + '">' + esc(m.content) + src + '</div>';
+      return '<div class="bubble ' + m.role + '">' + (m.role === "assistant" ? fmt(m.content) : esc(m.content)) + src + '</div>';
     }).join("");
   }
 
@@ -2345,10 +2641,10 @@
         '<div class="qtime">asked ' + relTime(q.createdAt) + '</div></div>' +
       '<span class="qstatus ' + badge.cls + '">' + badge.text + '</span></div>';
     var body = '<div class="qtext">' + esc(q.text) + '</div>';
-    var ai = q.aiAnswer ? '<div class="qans ai"><div class="qans-lbl">' + IC.spark + 'Quick AI answer · from the materials</div>' +
-        '<div class="qans-body">' + esc(q.aiAnswer.content) + '</div>' + qCitationsHTML(q.aiAnswer.citations) + '</div>' : "";
+    var ai = q.aiAnswer ? '<div class="qans ai"><div class="qans-lbl">' + IC.spark + 'Quick AI answer · from your materials &amp; the web</div>' +
+        '<div class="qans-body">' + fmt(q.aiAnswer.content) + '</div>' + qCitationsHTML(q.aiAnswer.citations) + '</div>' : "";
     var lead = q.leaderAnswer ? '<div class="qans leader"><div class="qans-lbl">Answer from ' + esc(q.leaderAnswer.byName || "your SI leader") + '</div>' +
-        '<div class="qans-body">' + esc(q.leaderAnswer.content) + '</div></div>' : "";
+        '<div class="qans-body">' + fmt(q.leaderAnswer.content) + '</div></div>' : "";
     // The asker's decision after an AI answer, or a nudge to escalate.
     var actionsRow = "";
     if (mine) {
@@ -2838,11 +3134,14 @@
           '<span class="sep">·</span><span>' + (leaderSessions + ownSessions) + ' session' + ((leaderSessions + ownSessions) === 1 ? '' : 's') + '</span></div>' +
       '</div><div class="ctx-actions"><button class="btn ghost" id="leaveRoomBtn">' + IC.door + 'Leave</button></div></div>';
     var tabs = '<div class="tabs">' + tabBtn("materials", "Materials") + tabBtn("contacts", "Contacts") +
-      tabBtn("plan", "Study plan") + tabBtn("tutor", "Tutor") + tabBtn("ask", "Ask") + tabBtn("sessions", "Practice sessions") + '</div>';
+      tabBtn("plan", "Study plan") + tabBtn("prep", "Prep seasons") + tabBtn("grades", "Grade predictor") +
+      tabBtn("tutor", "Tutor") + tabBtn("ask", "Ask") + tabBtn("sessions", "Practice sessions") + '</div>';
     var tab = view.tab === "chat" ? "ask" : view.tab;
     var body;
     if (tab === "contacts") body = renderContacts(en);
     else if (tab === "plan") body = renderPlan(en);
+    else if (tab === "prep") body = renderPrep(en);
+    else if (tab === "grades") body = renderGrades(en);
     else if (tab === "tutor") body = renderTutor(en);
     else if (tab === "ask") body = askBoardHTML(cl, false);
     else if (tab === "sessions") body = renderClassroomSessions(cl, en);
@@ -3451,12 +3750,13 @@
         '<button class="btn ghost" data-goto="materials">' + IC.plus + 'Add material</button>' +
         '<button class="btn primary" data-goto="sessions">' + IC.spark + 'New session</button>' +
       '</div></div>';
-    var tabs = '<div class="tabs">' + tabBtn("materials", "Materials") + tabBtn("contacts", "Contacts") + tabBtn("plan", "Study plan") + tabBtn("prep", "Prep seasons") + tabBtn("tutor", "Tutor") + tabBtn("chat", "Chat") + tabBtn("sessions", "Practice sessions") + '</div>';
+    var tabs = '<div class="tabs">' + tabBtn("materials", "Materials") + tabBtn("contacts", "Contacts") + tabBtn("plan", "Study plan") + tabBtn("prep", "Prep seasons") + tabBtn("grades", "Grade predictor") + tabBtn("tutor", "Tutor") + tabBtn("chat", "Chat") + tabBtn("sessions", "Practice sessions") + '</div>';
     var body;
     if (view.tab === "materials") body = renderMaterials(course);
     else if (view.tab === "contacts") body = renderContacts(course);
     else if (view.tab === "plan") body = renderPlan(course);
     else if (view.tab === "prep") body = renderPrep(course);
+    else if (view.tab === "grades") body = renderGrades(course);
     else if (view.tab === "tutor") body = renderTutor(course);
     else if (view.tab === "chat") body = renderChat(course);
     else body = renderSessions(course);
@@ -3667,6 +3967,124 @@
     return '<div class="content-inner">' + lead + grid + panel + '</div>';
   }
 
+  function renderGrades(course) {
+    var lead = '<p class="sec-lead">Read your grading breakdown from the syllabus, then type in the scores you have — or the ones you\'re aiming for — to see the grade you\'d finish the semester with. Change any number to play out a "what if I get an 80 on the final?" scenario.</p>';
+    var gen = '<div class="gen-row" style="justify-content:flex-start">' +
+        '<button class="btn primary" id="gradeBtn">' + IC.spark + (course.gradeScheme ? 'Re-read grading from syllabus' : 'Read grading from syllabus') + '</button>' +
+        (course.gradeScheme ? '<button class="btn ghost" id="gradeClearBtn">' + IC.trash + 'Clear</button>' : '') +
+      '</div>';
+
+    if (course.materials.length === 0) {
+      return '<div class="content-inner">' + lead +
+        '<div class="empty" style="padding:44px 20px">' + IC.file +
+          '<div class="big">No materials yet</div><div class="sm">Add your syllabus under Materials first, then read the grading here.</div></div></div>';
+    }
+    if (!course.gradeScheme) {
+      return '<div class="content-inner">' + lead + gen +
+        '<div class="empty" style="padding:40px 20px">' + IC.spark +
+          '<div class="big">No grading breakdown yet</div><div class="sm">Read the weighted breakdown from your syllabus to start predicting.</div></div></div>';
+    }
+
+    var sc = course.gradeScheme.content;
+    var cats = sc.categories || [];
+    var rows = cats.map(function (c) {
+      var val = course.gradeInputs[c.name];
+      return '<div class="grade-row">' +
+          '<div class="grade-cat"><span class="grade-name">' + esc(c.name) + '</span>' +
+            '<span class="grade-weight">' + esc(String(c.weight)) + '% of grade</span></div>' +
+          '<div class="grade-score"><input type="number" min="0" max="110" step="1" inputmode="decimal" ' +
+            'data-gradecat="' + esc(c.name) + '" value="' + (val === undefined || val === null ? "" : esc(String(val))) + '" placeholder="—" />' +
+            '<span class="pct">%</span></div>' +
+        '</div>';
+    }).join("");
+    var emptyCats = cats.length === 0
+      ? '<div class="empty" style="padding:28px 20px">' + IC.file + '<div class="big">No categories found</div>' +
+        '<div class="sm">The syllabus read didn\'t turn up a weighted breakdown. Try Re-read, or check the syllabus is under Materials.</div></div>'
+      : "";
+
+    var totalWeight = cats.reduce(function (a, c) { return a + (Number(c.weight) || 0); }, 0);
+    var weightWarn = (cats.length && Math.abs(totalWeight - 100) > 1)
+      ? '<div class="grade-warn">' + IC.help + 'Heads up: these weights add up to ' + (Math.round(totalWeight * 10) / 10) + '%, not 100%. Prediction is normalized across whatever you fill in, but double-check the breakdown against your syllabus.</div>'
+      : "";
+
+    var result = '<div class="grade-result" id="gradeResult">' + gradeResultInner(course) + '</div>';
+
+    var scaleNote = (sc.scale && sc.scale.length)
+      ? '<div class="grade-scalenote">Letter grades use the scale from your syllabus.</div>'
+      : '<div class="grade-scalenote">Your syllabus didn\'t state a letter scale, so a standard one is used (A 93+, A- 90+, B+ 87+, …).</div>';
+    var notes = sc.notes ? '<div class="grade-notes"><span class="lbl">' + IC.file + 'From the syllabus</span>' + esc(sc.notes) + '</div>' : "";
+
+    // Reverse calculator: pick a target letter, see the average you'd need on
+    // whatever you've left blank (e.g. "what do I need on the final for an A?").
+    var target = currentTarget(course);
+    var opts = targetOptions(course.gradeScheme).map(function (g) {
+      return '<option value="' + g.min + '"' + (Number(g.min) === Number(target) ? ' selected' : '') + '>' +
+        esc(g.grade) + ' (' + esc(String(g.min)) + '%+)</option>';
+    }).join("");
+    var targetBlock = cats.length
+      ? '<div class="grade-target"><div class="grade-target-head"><span class="lbl">' + IC.spark + 'What do I need to finish with…</span>' +
+          '<select id="gradeTarget" aria-label="Target grade">' + opts + '</select></div>' +
+          '<div class="grade-target-result" id="gradeTargetResult">' + gradeTargetInner(course) + '</div></div>'
+      : "";
+
+    var panel = '<div class="grade-panel">' +
+        '<div class="grade-panel-head"><h2>' + esc(sc.title || (course.name + " — grading")) + '</h2>' +
+          '<div class="ts">Read ' + new Date(course.gradeScheme.createdAt).toLocaleString() + '</div></div>' +
+        weightWarn +
+        (cats.length ? '<div class="grade-table">' + rows + '</div>' : emptyCats) +
+        (cats.length ? result + scaleNote + targetBlock : "") +
+        notes +
+      '</div>';
+    return '<div class="content-inner">' + lead + gen + panel + '</div>';
+  }
+
+  // Live readout for the reverse calculator, refreshed on every score/target
+  // change without a full re-render so inputs keep focus.
+  function gradeTargetInner(course) {
+    var sc = course.gradeScheme.content;
+    var scale = (sc.scale && sc.scale.length) ? sc.scale : DEFAULT_GRADE_SCALE;
+    var target = currentTarget(course);
+    var tLetter = letterForPct(scale, target);
+    var t = computeTarget(course.gradeScheme, course.gradeInputs, target);
+    var round1 = function (n) { return Math.round(n * 10) / 10; };
+    var tName = tLetter + " (" + round1(target) + "%+)";
+
+    if (t.remainingWeight === 0) {
+      var g = round1(t.guaranteedMin);
+      return (t.guaranteedMin >= target)
+        ? '<span class="ok">' + IC.check + 'You\'re there — with every category filled in you\'re at ' + g + '% (' + esc(letterForPct(scale, t.guaranteedMin)) + '), at or above ' + esc(tName) + '.</span>'
+        : '<span class="miss">' + IC.help + 'With every category filled in you\'re at ' + g + '% (' + esc(letterForPct(scale, t.guaranteedMin)) + '), below ' + esc(tName) + ' — no categories left to change.</span>';
+    }
+    var namesArr = t.remainingNames.map(esc);
+    var namesTxt = namesArr.length === 1 ? 'your ' + namesArr[0]
+      : 'your remaining categories (' + namesArr.join(", ") + ')';
+    if (t.required <= 0) {
+      return '<span class="ok">' + IC.check + 'You\'ve already locked in ' + esc(tName) + ' — even a 0% on ' + namesTxt + ' keeps you at or above it (currently guaranteed ' + round1(t.guaranteedMin) + '%).</span>';
+    }
+    if (t.required > 100) {
+      return '<span class="miss">' + IC.help + 'Even with 100% on ' + namesTxt + ', the most you can reach is ' + round1(t.maxReachable) + '% (' + esc(letterForPct(scale, t.maxReachable)) + '). ' + esc(tName) + ' isn\'t reachable anymore.</span>';
+    }
+    return '<span class="need">You need to average <strong>' + round1(t.required) + '%</strong> across ' + namesTxt + ' to finish with ' + esc(tName) + '.</span>';
+  }
+
+  // The live prediction readout — recomputed on every keystroke without a full
+  // re-render, so focus stays in the input the student is typing in.
+  function gradeResultInner(course) {
+    var r = computeGrade(course.gradeScheme, course.gradeInputs);
+    if (r.pct === null) {
+      return '<div class="grade-big"><div class="grade-pct">—</div>' +
+        '<div class="grade-sub">Type in a score above to see your predicted grade.</div></div>';
+    }
+    var pctStr = (Math.round(r.pct * 10) / 10).toFixed(1);
+    var full = Math.abs(r.accounted - 100) <= 1 && r.filled >= (course.gradeScheme.content.categories || []).length;
+    var sub = full
+      ? 'Predicted final grade with every category filled in.'
+      : 'Based on the categories you\'ve filled in — worth ' + (Math.round(r.accounted * 10) / 10) + '% of the final grade. Fill in the rest for a full-semester prediction.';
+    return '<div class="grade-big"><div class="grade-letter">' + esc(r.letter) + '</div>' +
+        '<div class="grade-pct">' + pctStr + '%</div></div>' +
+      '<div class="grade-sub">' + sub + '</div>';
+  }
+
   function renderChat(course) {
     var log = course.chat.length === 0
       ? '<div class="empty" style="padding:48px 20px">' + IC.spark + '<div class="big">Ask about this course</div><div class="sm">Answers are grounded in whatever materials you\'ve uploaded.</div></div>'
@@ -3674,7 +4092,7 @@
           var src = (m.citations && m.citations.length)
             ? '<div class="sources">' + m.citations.map(function (c) { return '<span class="chip">' + IC.file + '[' + c.index + '] ' + esc(c.filename) + '</span>'; }).join("") + '</div>'
             : "";
-          return '<div class="bubble ' + m.role + '">' + esc(m.content) + src + '</div>';
+          return '<div class="bubble ' + m.role + '">' + (m.role === "assistant" ? fmt(m.content) : esc(m.content)) + src + '</div>';
         }).join("");
     return '<div class="chat-pane"><div class="thread" id="chatLog">' + log + '</div>' +
       '<div class="composer-wrap"><div class="composer">' +
@@ -4537,6 +4955,47 @@
       var prepClear = document.getElementById("prepClearBtn");
       if (prepClear) prepClear.onclick = function () {
         if (view.prepSeason) { delete course.prepPlans[view.prepSeason]; persist(); renderPage(); }
+      };
+    }
+
+    if (view.tab === "grades") {
+      var gradeBtn = document.getElementById("gradeBtn");
+      if (gradeBtn) gradeBtn.onclick = async function () {
+        if (course.materials.length === 0) { alert("Add your syllabus under Materials first."); return; }
+        var orig = gradeBtn.innerHTML;
+        gradeBtn.disabled = true; gradeBtn.innerHTML = IC.spark + 'Reading syllabus…';
+        try {
+          course.gradeScheme = await extractGradeScheme(course);
+          persist(); renderPage();
+        } catch (e) {
+          alert("Couldn't read the grading: " + e.message);
+          gradeBtn.disabled = false; gradeBtn.innerHTML = orig;
+        }
+      };
+      var gradeClear = document.getElementById("gradeClearBtn");
+      if (gradeClear) gradeClear.onclick = function () {
+        course.gradeScheme = null; persist(); renderPage();
+      };
+      // Live "what-if": update the score, recompute, and refresh only the result
+      // readout so the input keeps focus while the student types.
+      Array.prototype.forEach.call(pageEl.querySelectorAll("[data-gradecat]"), function (inp) {
+        inp.oninput = function () {
+          var name = inp.getAttribute("data-gradecat");
+          var v = inp.value.trim();
+          if (v === "") delete course.gradeInputs[name];
+          else course.gradeInputs[name] = v;
+          persist();
+          var res = document.getElementById("gradeResult");
+          if (res) res.innerHTML = gradeResultInner(course);
+          var tgt = document.getElementById("gradeTargetResult");
+          if (tgt) tgt.innerHTML = gradeTargetInner(course);
+        };
+      });
+      var gradeTarget = document.getElementById("gradeTarget");
+      if (gradeTarget) gradeTarget.onchange = function () {
+        course.gradeTarget = gradeTarget.value; persist();
+        var tgt = document.getElementById("gradeTargetResult");
+        if (tgt) tgt.innerHTML = gradeTargetInner(course);
       };
     }
 
