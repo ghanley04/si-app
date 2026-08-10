@@ -1,0 +1,35 @@
+name: Notify Portfolio to redeploy SISTA
+
+# When SISTA (this repo) changes, tell the Portfolio repo to rebuild so the
+# copy served at gillianhanley.us/sista/ picks up the new index.html.
+#
+# The Portfolio deploy workflow listens for a repository_dispatch of type
+# "sista-updated". Cross-repo dispatch can't use the default GITHUB_TOKEN, so
+# this needs a Personal Access Token with `repo` scope saved in this repo as
+# the secret PORTFOLIO_DISPATCH_TOKEN (Settings -> Secrets and variables ->
+# Actions -> New repository secret).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:   # manual "Run workflow" button as a fallback
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Portfolio rebuild
+        env:
+          TOKEN: ${{ secrets.PORTFOLIO_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "PORTFOLIO_DISPATCH_TOKEN is not set — add it under Settings > Secrets and variables > Actions." >&2
+            exit 1
+          fi
+          curl -sS --fail-with-body -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/ghanley04/Portfolio/dispatches \
+            -d '{"event_type":"sista-updated"}'
+          echo "Sent sista-updated dispatch to ghanley04/Portfolio."
