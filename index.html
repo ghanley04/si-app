@@ -13,7 +13,7 @@
       file onto the page. That is why this list spells the delimiters
       out in words instead of symbols.)
   2. THIS IS A SINGLE HTML FILE. All HTML, CSS, and JavaScript live
-     in demo.html and nowhere else. Edit ONLY this one file — no
+     in index.html and nowhere else. Edit ONLY this one file — no
      extra stylesheets, scripts, build steps, or config files.
   3. BRANDING: the app is named "SIsta" (SI + sister). Keep it on
      every iteration — never rename it back to "SI Companion" or
@@ -391,7 +391,18 @@
     padding:7px 13px; border-radius:20px; transition:border-color .12s, transform .05s; }
   .topic-suggest:hover { border-color:var(--accent); }
   .topic-suggest:active { transform:translateY(1px); }
+  .topic-suggest.on { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); }
+  .topic-suggest.on::before { content:"✓ "; font-weight:800; }
   .suggest-empty { font-size:13px; color:var(--text-muted); }
+  /* ---------- study-plan focus (struggle topics) ---------- */
+  .plan-focus { margin:4px 0 16px; background:var(--surface-2); border:1px solid var(--border);
+    border-radius:14px; padding:16px 18px; }
+  .plan-focus h3 { font-size:14.5px; font-weight:650; margin:0 0 3px; color:var(--text); }
+  .plan-focus .hint { font-size:12.5px; color:var(--text-muted); line-height:1.5; margin:0 0 12px; }
+  .plan-focus .suggest-chips { margin-bottom:12px; }
+  .plan-focus-add { display:flex; gap:8px; align-items:center; }
+  .plan-focus-add input { flex:1; min-width:0; }
+  .plan-focus-count { font-size:12px; color:var(--text-muted); margin-top:9px; }
   .worksheet { margin-top:22px; background:var(--panel-bg); border:1px solid var(--border); border-radius:14px; padding:2px 24px 24px; }
   .ws-head { padding:20px 0 14px; border-bottom:1px solid var(--border); }
   .ws-head h2 { font-size:18px; font-weight:650; margin:0; color:var(--text); letter-spacing:-.01em; }
@@ -1162,6 +1173,9 @@
     if (!c.contacts) c.contacts = [];
     c.contacts.forEach(backfillContact);
     if (c.studyPlan === undefined) c.studyPlan = null;
+    // Up to 3 topics the student says they struggle with most; the study plan
+    // is built to focus extra time and practice on these.
+    if (!c.planFocus) c.planFocus = [];
     if (!c.prepPlans) c.prepPlans = {};
     if (c.gradeScheme === undefined) c.gradeScheme = null;
     if (!c.gradeInputs) c.gradeInputs = {};
@@ -1661,8 +1675,14 @@
       },
       required: ["title", "summary", "units", "tips"], additionalProperties: false
     };
-    var system = "You are an SI (Supplemental Instruction) study coach. From the student's course materials — especially any syllabus, schedule, or list of exam dates — build a concrete study plan. Break the term into ordered units (use the syllabus's own weeks/units and dates when present; otherwise group by topic). For each unit give: a label, a 'when' (a date range or week if the materials state one, else \"\"), the topics it covers, and 2-4 specific study actions (what to review, practice, or do to prepare). Add a few short overall study tips, calling out any exams or major deadlines you find. Ground everything in the materials; never invent dates that aren't there.";
-    var user = "COURSE MATERIALS:\n" + context + "\n\nBuild a study plan for this course from the materials above.";
+    var focus = (course.planFocus || []).filter(function (t) { return t && t.trim(); });
+    var focusSystem = focus.length
+      ? " The student has told you the 2-3 topics they struggle with most: " + focus.join(", ") + ". Build the plan AROUND these — give them more units (or dedicate whole units to them), schedule them earlier and revisit them, and weight the study actions toward extra review and practice on exactly these topics. Still cover the rest of the course, but more briefly. In the summary, say plainly that the plan is focused on these struggle topics."
+      : "";
+    var system = "You are an SI (Supplemental Instruction) study coach. From the student's course materials — especially any syllabus, schedule, or list of exam dates — build a concrete study plan. Break the term into ordered units (use the syllabus's own weeks/units and dates when present; otherwise group by topic). For each unit give: a label, a 'when' (a date range or week if the materials state one, else \"\"), the topics it covers, and 2-4 specific study actions (what to review, practice, or do to prepare). Add a few short overall study tips, calling out any exams or major deadlines you find. Ground everything in the materials; never invent dates that aren't there." + focusSystem;
+    var user = "COURSE MATERIALS:\n" + context +
+      (focus.length ? "\n\nTOPICS THE STUDENT STRUGGLES WITH MOST (focus the plan on these): " + focus.join(", ") : "") +
+      "\n\nBuild a study plan for this course from the materials above" + (focus.length ? ", focusing extra time and practice on the struggle topics." : ".");
     var raw = await callClaude({ system: system, user: user, schema: schema, maxTokens: 4096 });
     return { createdAt: Date.now(), content: JSON.parse(raw) };
   }
@@ -1670,24 +1690,53 @@
   function localGenerateStudyPlan(course) {
     var topics = (course.topics.length ? course.topics.map(function (t) { return t.name; }) : localExtractTopics(course));
     if (topics.length === 0) topics = ["Course material"];
-    var perUnit = Math.max(1, Math.ceil(topics.length / 3));
+    var focus = (course.planFocus || []).filter(function (t) { return t && t.trim(); });
     var units = [];
-    for (var i = 0; i < topics.length; i += perUnit) {
-      var group = topics.slice(i, i + perUnit);
-      units.push({
-        label: "Unit " + (units.length + 1),
-        when: "",
-        topics: group,
-        study: [
-          "Review your notes on " + group.join(", ") + ".",
-          "Write a one-sentence summary of each topic from memory.",
-          "Do a few practice problems, then use the Tutor tab to self-check."
-        ]
+    // When the student named struggle topics, give each its own front-loaded unit
+    // with extra practice, then group the remaining topics more briefly.
+    if (focus.length) {
+      focus.forEach(function (t) {
+        units.push({
+          label: "Focus — " + t,
+          when: "",
+          topics: [t],
+          study: [
+            "Re-read your notes and the textbook section on " + t + " slowly, marking every step you can't yet explain.",
+            "Redo the hardest worked example on " + t + " with the solution covered, then check it.",
+            "Do several practice problems on " + t + ", then use the Tutor tab to self-check.",
+            "Bring your specific stuck point on " + t + " to your next SI session."
+          ]
+        });
       });
+      var rest = topics.filter(function (t) { return !focus.some(function (f) { return f.toLowerCase() === t.toLowerCase(); }); });
+      var perUnit = Math.max(1, Math.ceil(rest.length / 2));
+      for (var j = 0; j < rest.length; j += perUnit) {
+        var g = rest.slice(j, j + perUnit);
+        units.push({ label: "Review — " + g.join(", "), when: "", topics: g,
+          study: ["Skim your notes on " + g.join(", ") + " and write a one-sentence summary of each from memory.", "Do a couple of practice problems to confirm you still have it."] });
+      }
+    } else {
+      var perUnit2 = Math.max(1, Math.ceil(topics.length / 3));
+      for (var i = 0; i < topics.length; i += perUnit2) {
+        var group = topics.slice(i, i + perUnit2);
+        units.push({
+          label: "Unit " + (units.length + 1),
+          when: "",
+          topics: group,
+          study: [
+            "Review your notes on " + group.join(", ") + ".",
+            "Write a one-sentence summary of each topic from memory.",
+            "Do a few practice problems, then use the Tutor tab to self-check."
+          ]
+        });
+      }
     }
     return { createdAt: Date.now(), content: {
       title: course.name + " — study plan",
-      summary: "A topic-by-topic plan built from your materials. Add your Anthropic API key and upload the syllabus for a plan that follows the real schedule and exam dates.",
+      summary: (focus.length
+          ? "A plan focused on the topics you struggle with most (" + focus.join(", ") + "), with the rest of the course in lighter review units. "
+          : "A topic-by-topic plan built from your materials. ") +
+        "Add your Anthropic API key and upload the syllabus for a plan that follows the real schedule and exam dates.",
       units: units,
       tips: [
         "Study a little each day rather than cramming.",
@@ -2678,15 +2727,15 @@
       : all.filter(function (q) { return q.askerId === (session && session.id); });
     var lead = leader
       ? 'Questions your students sent you — either asked directly or escalated after an AI answer wasn’t enough. Answer directly, or tap <strong>AI draft</strong> for a starting point from the class materials.'
-      : 'Message your SI leader, or get an instant AI answer from the class materials. If the AI answer isn’t enough, one tap still sends your question to your leader.';
+      : 'Send your question to your SI leader. AI answers stay hidden here — if you want one, tap <strong>Get a quick AI answer</strong> and it’ll appear only then. For open-ended help anytime, use the <strong>Chat</strong> tab.';
     var list = qs.length
       ? '<div class="qa-list">' + qs.map(function (q) { return questionCardHTML(q, leader); }).join("") + '</div>'
       : '<div class="empty" style="padding:44px 20px">' + IC.inbox +
           '<div class="big">No questions yet</div>' +
-          '<div class="sm">' + (leader ? "When a student sends you a question, it’ll show up here." : "Ask your SI leader below, or get a quick AI answer first.") + '</div></div>';
+          '<div class="sm">' + (leader ? "When a student sends you a question, it’ll show up here." : "Ask your SI leader below. Prefer to work it out with AI? Use the Chat tab, or tap “Get a quick AI answer.”") + '</div></div>';
     var composer = leader ? "" :
       '<div class="ask-composer"><h3>Ask a question</h3>' +
-        '<p class="hint">Send it straight to your SI leader, or get a quick AI answer grounded in the class materials first — you can still escalate to your leader afterward.</p>' +
+        '<p class="hint">This goes to your SI leader. No AI answer shows up unless you ask for one — tap <strong>Get a quick AI answer</strong> for a materials-grounded reply, or head to the <strong>Chat</strong> tab for open-ended questions.</p>' +
         '<textarea id="askInput" placeholder="e.g. Can you explain the difference between the two methods from lecture 3?"></textarea>' +
         '<div class="ask-actions"><button class="btn primary" id="askLeaderBtn">' + IC.send + 'Ask SI leader</button>' +
           '<button class="btn ghost" id="askAiBtn">' + IC.spark + 'Get a quick AI answer</button></div></div>';
@@ -3191,16 +3240,38 @@
     }
     return cl.sessions[cl.sessions.length - 1] || en.sessions[en.sessions.length - 1] || null;
   }
-  // Read-only for students: only the SI leader publishes sessions here. Sessions a
-  // student generated before that rule still render (and stay deletable) under
-  // "Your sessions" so nothing they already made vanishes on them.
+  // Students see the sessions their SI leader publishes AND can generate their
+  // own to study from. A student's own sessions live on their private overlay
+  // (en.sessions), grouped separately and individually deletable.
   function renderClassroomSessions(cl, en) {
     var own = en.sessions, all = cl.sessions.concat(own);
+
+    // Topic ideas to generate from: the classroom's + your own topics, plus any
+    // AI-fetched suggestions. No uploads required — pick one or type your own.
+    var seen = {}, suggestions = [];
+    (cl.topics || []).concat(en.topics || []).forEach(function (t) {
+      var nm = (t && t.name) || ""; var k = nm.toLowerCase();
+      if (nm && !seen[k]) { seen[k] = 1; suggestions.push(nm); }
+    });
+    (view.sessionSuggestions || []).forEach(function (n) { var k = n.toLowerCase(); if (!seen[k]) { seen[k] = 1; suggestions.push(n); } });
+    var chips = suggestions.map(function (n) {
+      return '<button class="topic-suggest" data-topic="' + esc(n) + '">' + esc(n) + '</button>';
+    }).join("");
+    var suggestBlock = '<div class="session-suggest">' +
+        '<div class="suggest-head"><label class="field-label">Make your own practice session</label>' +
+          '<button class="btn ghost sm" id="roomSuggestBtn">' + IC.spark + (suggestions.length ? 'Suggest more' : 'Suggest topics') + '</button></div>' +
+        (suggestions.length
+          ? '<div class="suggest-chips">' + chips + '</div>'
+          : '<div class="suggest-empty">No suggestions yet — tap “Suggest topics” for ideas, or just type your own below.</div>') +
+      '</div>';
+    var genBlock = suggestBlock +
+      '<div class="gen-row"><input type="text" id="roomGenTopic" placeholder="Or type any topic, e.g. titration curves" />' +
+        '<button class="btn primary" id="roomGenBtn">' + IC.spark + 'Generate session</button></div>';
+
     if (!all.length) {
-      return '<div class="content-inner"><div class="empty">' + IC.spark +
-        '<div class="big">No sessions yet</div>' +
-        '<div class="sm">Your SI leader hasn’t published a practice session for this classroom yet. They’ll show up here as soon as one does.</div>' +
-        '</div></div>';
+      return '<div class="content-inner">' +
+        '<p class="sec-lead">Your SI leader hasn’t published a practice session yet — but you can generate your own to study from. Pick a topic or type one; any shared or private materials make it more specific.</p>' +
+        genBlock + '</div>';
     }
     var opt = function (s) { return '<option value="' + s.id + '">' + esc(s.topic) + ' — ' + new Date(s.createdAt).toLocaleString() + '</option>'; };
     var groups = "";
@@ -3216,8 +3287,8 @@
       if (isOwn) worksheet += '<div style="margin-top:12px"><button class="btn ghost sm" id="ownSessionDel">' + IC.trash + 'Delete this session</button></div>';
     }
     return '<div class="content-inner">' +
-      '<p class="sec-lead">Practice sessions your SI leader published for this classroom. Reveal answers and grade yourself — your progress is saved to your account.</p>' +
-      picker + worksheet + '</div>';
+      '<p class="sec-lead">Practice sessions your SI leader published for this classroom — plus any you generate yourself. Reveal answers and grade yourself; your progress is saved to your account.</p>' +
+      genBlock + picker + worksheet + '</div>';
   }
 
   // ---------- shared classroom wiring ----------
@@ -3670,9 +3741,47 @@
       };
     });
   }
-  // Classroom Sessions tab: practice the leader's published sessions (students
-  // don't generate their own here). Grades are per-student via clGrades.
+  // Classroom Sessions tab: practice the leader's published sessions and
+  // generate your own into the private overlay. Grades are per-student via clGrades.
   function wireClassroomSessions(cl, en) {
+    // ----- generate-your-own session (into the student's private overlay) -----
+    var genBtn = document.getElementById("roomGenBtn");
+    var topicInput = document.getElementById("roomGenTopic");
+    async function runRoomGenerate(t, trigger) {
+      t = (t || "").trim();
+      if (!t) { alert("Pick a suggested topic or type one."); return; }
+      var btn = trigger || genBtn, orig = btn.innerHTML;
+      if (genBtn) genBtn.disabled = true;
+      btn.disabled = true; btn.innerHTML = IC.spark + 'Generating…';
+      try {
+        var s = await generateSession(en, t);
+        en.sessions.push(s); view.activeSession = s.id; persist(); renderPage();
+      } catch (e) {
+        alert("Session generation failed: " + e.message);
+        if (genBtn) genBtn.disabled = false;
+        btn.disabled = false; btn.innerHTML = orig;
+      }
+    }
+    if (genBtn) genBtn.onclick = function () { runRoomGenerate(topicInput.value, genBtn); };
+    if (topicInput) topicInput.onkeydown = function (e) { if (e.key === "Enter") runRoomGenerate(topicInput.value, genBtn); };
+    Array.prototype.forEach.call(pageEl.querySelectorAll(".topic-suggest"), function (chip) {
+      chip.onclick = function () { runRoomGenerate(chip.getAttribute("data-topic"), chip); };
+    });
+    var roomSuggest = document.getElementById("roomSuggestBtn");
+    if (roomSuggest) roomSuggest.onclick = async function () {
+      var orig = roomSuggest.innerHTML;
+      roomSuggest.disabled = true; roomSuggest.innerHTML = IC.spark + 'Thinking…';
+      try {
+        var ideas = await suggestSessionTopics(en);
+        if (!ideas.length) { alert("No topic ideas yet — add some materials, or type a topic below."); }
+        view.sessionSuggestions = (view.sessionSuggestions || []).concat(ideas);
+        renderPage();
+      } catch (e) {
+        alert("Couldn't suggest topics: " + e.message);
+        roomSuggest.disabled = false; roomSuggest.innerHTML = orig;
+      }
+    };
+
     var active = classroomActiveSession(cl, en);
     var sel = document.getElementById("sessionSelect");
     // Keep the dropdown showing the session actually rendered below it.
@@ -3884,25 +3993,53 @@
     return '<div class="content-inner">' + lead + actions + body + '</div>';
   }
 
+  // The "what do you struggle with?" picker above the study plan. Candidate
+  // topics come from the course's own topics and any existing plan, plus any the
+  // student already picked. Choosing 2-3 focuses the plan on those.
+  function planFocusHTML(course) {
+    var focus = course.planFocus || [];
+    var seen = {}, cands = [];
+    var add = function (nm) { nm = (nm || "").trim(); var k = nm.toLowerCase(); if (nm && !seen[k]) { seen[k] = 1; cands.push(nm); } };
+    focus.forEach(add);
+    (course.topics || []).forEach(function (t) { add(t && t.name); });
+    if (course.studyPlan && course.studyPlan.content) {
+      (course.studyPlan.content.units || []).forEach(function (u) { (u.topics || []).forEach(add); });
+    }
+    var chips = cands.map(function (n) {
+      var on = focus.some(function (f) { return f.toLowerCase() === n.toLowerCase(); });
+      return '<button class="topic-suggest' + (on ? ' on' : '') + '" data-focustopic="' + esc(n) + '">' + esc(n) + '</button>';
+    }).join("");
+    var atMax = focus.length >= 3;
+    var count = focus.length
+      ? '<div class="plan-focus-count">Focusing on <strong>' + focus.map(esc).join("</strong>, <strong>") + '</strong>' + (atMax ? ' — that’s the max of 3. Tap one to remove it.' : ' — pick up to ' + (3 - focus.length) + ' more if you like.') + '</div>'
+      : '<div class="plan-focus-count">No focus picked yet — the plan will cover everything evenly. Choose 2–3 to zero in on what’s hardest for you.</div>';
+    return '<div class="plan-focus"><h3>What do you struggle with most?</h3>' +
+      '<p class="hint">Pick 2–3 topics you find hardest. Your plan will spend extra units, review, and practice on these instead of treating every topic the same.</p>' +
+      (chips ? '<div class="suggest-chips">' + chips + '</div>' : '') +
+      '<div class="plan-focus-add"><input type="text" id="planFocusInput" placeholder="Or type a topic you struggle with…" ' + (atMax ? 'disabled ' : '') + '/>' +
+        '<button class="btn ghost sm" id="planFocusAddBtn"' + (atMax ? ' disabled' : '') + '>' + IC.plus + 'Add</button></div>' +
+      count + '</div>';
+  }
   function renderPlan(course) {
-    var lead = '<p class="sec-lead">Upload your syllabus (PDF or text) in <strong>Materials</strong>, then generate a study plan. Claude reads the schedule and exam dates and lays out what to study, in order.</p>';
-    var gen = '<div class="gen-row" style="justify-content:flex-start">' +
-        '<button class="btn primary" id="planBtn">' + IC.spark + (course.studyPlan ? 'Regenerate study plan' : 'Generate study plan') + '</button>' +
-        (course.studyPlan ? '<button class="btn ghost" id="planClearBtn">' + IC.trash + 'Clear</button>' : '') +
-      '</div>';
+    var lead = '<p class="sec-lead">Upload your syllabus (PDF or text) in <strong>Materials</strong>, then pick the topics you struggle with most and generate a study plan. Claude reads the schedule and exam dates and lays out what to study, in order — with extra focus on your hardest topics.</p>';
     if (course.materials.length === 0) {
       return '<div class="content-inner">' + lead +
         '<div class="empty" style="padding:44px 20px">' + IC.file +
           '<div class="big">No materials yet</div><div class="sm">Add your syllabus under Materials first, then come back here.</div></div></div>';
     }
+    var focusBlock = planFocusHTML(course);
+    var gen = '<div class="gen-row" style="justify-content:flex-start">' +
+        '<button class="btn primary" id="planBtn">' + IC.spark + (course.studyPlan ? 'Regenerate study plan' : 'Generate study plan') + '</button>' +
+        (course.studyPlan ? '<button class="btn ghost" id="planClearBtn">' + IC.trash + 'Clear</button>' : '') +
+      '</div>';
     var planBody;
     if (!course.studyPlan) {
       planBody = '<div class="empty" style="padding:40px 20px">' + IC.spark +
-        '<div class="big">No plan yet</div><div class="sm">Generate a study plan from your materials.</div></div>';
+        '<div class="big">No plan yet</div><div class="sm">Pick your hardest topics above, then generate a study plan from your materials.</div></div>';
     } else {
       planBody = planTimelineHTML(course.studyPlan, course.name + " — study plan", "Study tips");
     }
-    return '<div class="content-inner">' + lead + gen + planBody + '</div>';
+    return '<div class="content-inner">' + lead + focusBlock + gen + planBody + '</div>';
   }
 
   // Renders a { createdAt, content:{title,summary,units,tips} } plan entry as the
@@ -4012,6 +4149,9 @@
     var scaleNote = (sc.scale && sc.scale.length)
       ? '<div class="grade-scalenote">Letter grades use the scale from your syllabus.</div>'
       : '<div class="grade-scalenote">Your syllabus didn\'t state a letter scale, so a standard one is used (A 93+, A- 90+, B+ 87+, …).</div>';
+    // Predictions are a plain weighted average — they can't model an end-of-term
+    // curve, which the instructor sets however they like. Say so plainly.
+    var curveNote = '<div class="grade-warn">' + IC.help + 'This is a straight weighted average — it can’t account for a curve. Curves are set by your instructor at the end of the term and are genuinely unpredictable, so a real final grade can land higher (or occasionally lower) than what you see here. Treat this as a ballpark, not a guarantee.</div>';
     var notes = sc.notes ? '<div class="grade-notes"><span class="lbl">' + IC.file + 'From the syllabus</span>' + esc(sc.notes) + '</div>' : "";
 
     // Reverse calculator: pick a target letter, see the average you'd need on
@@ -4032,7 +4172,7 @@
           '<div class="ts">Read ' + new Date(course.gradeScheme.createdAt).toLocaleString() + '</div></div>' +
         weightWarn +
         (cats.length ? '<div class="grade-table">' + rows + '</div>' : emptyCats) +
-        (cats.length ? result + scaleNote + targetBlock : "") +
+        (cats.length ? result + scaleNote + curveNote + targetBlock : "") +
         notes +
       '</div>';
     return '<div class="content-inner">' + lead + gen + panel + '</div>';
@@ -4910,6 +5050,24 @@
     }
 
     if (view.tab === "plan") {
+      // Struggle-topic picker: toggle a chip on/off (cap 3), or type one to add.
+      if (!course.planFocus) course.planFocus = [];
+      var toggleFocus = function (nm) {
+        nm = (nm || "").trim(); if (!nm) return;
+        var i = course.planFocus.findIndex(function (f) { return f.toLowerCase() === nm.toLowerCase(); });
+        if (i !== -1) { course.planFocus.splice(i, 1); }
+        else { if (course.planFocus.length >= 3) { alert("Pick at most 3 topics to focus on."); return; } course.planFocus.push(nm); }
+        persist(); renderPage();
+      };
+      Array.prototype.forEach.call(pageEl.querySelectorAll("[data-focustopic]"), function (chip) {
+        chip.onclick = function () { toggleFocus(chip.getAttribute("data-focustopic")); };
+      });
+      var focusInput = document.getElementById("planFocusInput");
+      var focusAdd = document.getElementById("planFocusAddBtn");
+      var doFocusAdd = function () { if (focusInput && focusInput.value.trim()) toggleFocus(focusInput.value); };
+      if (focusAdd) focusAdd.onclick = doFocusAdd;
+      if (focusInput) focusInput.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); doFocusAdd(); } };
+
       var planBtn = document.getElementById("planBtn");
       if (planBtn) planBtn.onclick = async function () {
         if (course.materials.length === 0) { alert("Add your syllabus under Materials first."); return; }
