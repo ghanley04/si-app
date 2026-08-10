@@ -898,13 +898,21 @@
   // ============================================================
   // CLAUDE CONFIG  —  the API key is NEVER stored in this file.
   // ============================================================
-  // The key is read at runtime from the project's .env file (CLAUDE_API_KEY=…),
-  // which the dev server serves from the project root and .gitignore keeps out
-  // of git. loadEnvKey() fetches it on startup into ENV_KEY; nothing is
-  // hardcoded here, so no key can ever be committed or pushed to GitHub.
+  // On the published site, requests go through a Cloudflare Worker proxy
+  // (see /proxy) that holds ONE shared Anthropic key server-side. The key
+  // never reaches the browser. Set PROXY_URL to your worker's URL, e.g.
+  //   var PROXY_URL = "https://sista-proxy.your-name.workers.dev";
+  //
+  // For LOCAL development you can instead leave PROXY_URL empty and put a
+  // key in the git-ignored .env file (CLAUDE_API_KEY=…); serve.command
+  // serves it and loadEnvKey() reads it into ENV_KEY. Nothing is hardcoded
+  // here either way, so no key can ever be committed or pushed to GitHub.
+  var PROXY_URL = "";  // ← paste your Cloudflare Worker URL here
+
   var ENV_KEY = "";
   function getKey() { return ENV_KEY.trim(); }
   async function loadEnvKey() {
+    if (PROXY_URL) return;  // proxy mode — no local key needed
     try {
       var res = await fetch(".env", { cache: "no-store" });
       if (!res.ok) return;
@@ -918,7 +926,9 @@
     maxTokens: 2048
   };
 
-  function claudeReady() { return getKey().length > 0; }
+  // Ready when a proxy is configured (shared key, works for everyone) OR a
+  // local .env key is present (local dev). Otherwise the app runs offline.
+  function claudeReady() { return PROXY_URL.length > 0 || getKey().length > 0; }
 
   // Calls the Claude Messages API directly from the browser.
   // opts: { system, user, content, schema, maxTokens }
@@ -935,16 +945,27 @@
     if (opts.schema) body.output_config = { format: { type: "json_schema", schema: opts.schema } };
     if (opts.tools) body.tools = opts.tools;
 
-    var res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": getKey(),
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true"
-      },
-      body: JSON.stringify(body)
-    });
+    // Proxy mode: call the Cloudflare Worker, which adds the shared key
+    // server-side. Direct mode (local dev): call Anthropic with the .env key.
+    var res;
+    if (PROXY_URL) {
+      res = await fetch(PROXY_URL, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body)
+      });
+    } else {
+      res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": getKey(),
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify(body)
+      });
+    }
     if (!res.ok) throw new Error("Claude API " + res.status + ": " + (await res.text()));
     var data = await res.json();
     return (data.content || [])
