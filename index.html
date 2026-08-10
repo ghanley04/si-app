@@ -974,6 +974,37 @@
       .join("");
   }
 
+  // Anthropic's hosted web-search tool. Added to the topic/plan calls so Claude
+  // can supplement a thin or missing syllabus with the course's real topics
+  // found online (its own syllabus/schedule pages, department listings, etc.).
+  function webSearchTools(maxUses) {
+    return [{ type: "web_search_20250305", name: "web_search", max_uses: maxUses || 3 }];
+  }
+
+  // Parse a JSON object out of a model reply. With structured output the whole
+  // reply is already JSON; but when web search is on, the reply can carry a
+  // little stray prose, so fall back to the first balanced {…} block.
+  function parseJsonLoose(text) {
+    var s = String(text == null ? "" : text).trim();
+    try { return JSON.parse(s); } catch (e) { /* fall through */ }
+    var start = s.indexOf("{");
+    if (start < 0) return null;
+    var depth = 0, inStr = false, escaped = false;
+    for (var i = start; i < s.length; i++) {
+      var ch = s[i];
+      if (inStr) {
+        if (escaped) escaped = false;
+        else if (ch === "\\") escaped = true;
+        else if (ch === '"') inStr = false;
+      } else if (ch === '"') inStr = true;
+      else if (ch === "{") depth++;
+      else if (ch === "}" && --depth === 0) {
+        try { return JSON.parse(s.slice(start, i + 1)); } catch (e2) { return null; }
+      }
+    }
+    return null;
+  }
+
   // Reads a File as a base64 data URL.
   function readAsDataURL(file) {
     return new Promise(function (resolve, reject) {
@@ -1444,11 +1475,14 @@
       required: ["topics"], additionalProperties: false };
     var system = "You suggest study topics a student could run a Supplemental Instruction practice session on. " +
       "Return 6 short topic names (2-5 words each), specific and practiceable, no numbering, no duplicates. " +
-      "Base them on the course materials if provided; otherwise use the course name and your knowledge of what that course typically covers.";
+      "Base them on the course materials when provided, and use web search to ground them in the course's real syllabus/topics; " +
+      "otherwise use the course name and your knowledge of what that course typically covers. " +
+      "Name real subject matter, never logistics words like the school, \"students\", \"homework\", or \"section\".";
     var user = "COURSE: " + (course.name || "a college course") +
       (known.length ? "\nTOPICS ALREADY ADDED (avoid repeating): " + known.join(", ") : "") +
       (materials ? "\n\nCOURSE MATERIALS:\n" + materials : "");
-    return JSON.parse(await callClaude({ system: system, user: user, schema: schema })).topics || [];
+    var raw = await callClaude({ system: system, user: user, schema: schema, tools: webSearchTools(3), maxTokens: 2048 });
+    return (parseJsonLoose(raw) || {}).topics || [];
   }
 
   function localSuggestSessionTopics(course) {
@@ -1700,12 +1734,13 @@
     var focusSystem = focus.length
       ? " The student has told you the 2-3 topics they struggle with most: " + focus.join(", ") + ". Build the plan AROUND these — give them more units (or dedicate whole units to them), schedule them earlier and revisit them, and weight the study actions toward extra review and practice on exactly these topics. Still cover the rest of the course, but more briefly. In the summary, say plainly that the plan is focused on these struggle topics."
       : "";
-    var system = "You are an SI (Supplemental Instruction) study coach. From the student's course materials — especially any syllabus, schedule, or list of exam dates — build a concrete study plan. Break the term into ordered units (use the syllabus's own weeks/units and dates when present; otherwise group by topic). For each unit give: a label, a 'when' (a date range or week if the materials state one, else \"\"), the topics it covers, and 2-4 specific study actions (what to review, practice, or do to prepare). Add a few short overall study tips, calling out any exams or major deadlines you find. Ground everything in the materials; never invent dates that aren't there." + focusSystem;
-    var user = "COURSE MATERIALS:\n" + context +
+    var system = "You are an SI (Supplemental Instruction) study coach. Build a concrete study plan for the student's course, drawing on BOTH their uploaded materials — especially any syllabus, schedule, or list of exam dates — AND the web. Use web search to fill in the course's real topics when the materials are thin, but NEVER invent dates: dates and deadlines must come from the student's own materials. Break the term into ordered units (use the syllabus's own weeks/units and dates when present; otherwise group by topic). For each unit give: a label, a 'when' (a date range or week if the materials state one, else \"\"), the topics it covers, and 2-4 specific study actions (what to review, practice, or do to prepare). Add a few short overall study tips, calling out any exams or major deadlines you find. Ground the schedule in the materials; you may enrich the topic coverage from the web." + focusSystem;
+    var user = "COURSE: " + (course.name || "a college course") +
+      (context ? "\n\nCOURSE MATERIALS:\n" + context : "\n\n(No materials uploaded — look the course up online for its typical topics, but leave dates blank.)") +
       (focus.length ? "\n\nTOPICS THE STUDENT STRUGGLES WITH MOST (focus the plan on these): " + focus.join(", ") : "") +
-      "\n\nBuild a study plan for this course from the materials above" + (focus.length ? ", focusing extra time and practice on the struggle topics." : ".");
-    var raw = await callClaude({ system: system, user: user, schema: schema, maxTokens: 4096 });
-    return { createdAt: Date.now(), content: JSON.parse(raw) };
+      "\n\nBuild a study plan for this course" + (focus.length ? ", focusing extra time and practice on the struggle topics." : ".");
+    var raw = await callClaude({ system: system, user: user, schema: schema, tools: webSearchTools(3), maxTokens: 4096 });
+    return { createdAt: Date.now(), content: parseJsonLoose(raw) };
   }
 
   function localGenerateStudyPlan(course) {
@@ -2178,10 +2213,24 @@
   // BACKUP: when the syllabus doesn't give a professor's full name or the
   // semesters they normally teach, Claude looks them up online with its
   // web-search tool and fills in only the blanks it can verify.
+  // True when a contact's "name" was only mechanically derived from an email
+  // handle (e.g. "Hanleyg" from hanleyg@purdue.edu) rather than read as a real
+  // person's name. Such a contact still needs a real name, so it's a lookup
+  // target even though it technically has a name string.
+  function isEmailDerivedName(c) {
+    var name = String(c.name || "").trim();
+    if (!name || !c.email) return false;
+    if (name.toLowerCase() === emailToName(c.email).toLowerCase()) return true;
+    var handle = String(c.email).split("@")[0].replace(/[._\-]+/g, "").toLowerCase();
+    return !/\s/.test(name) && name.replace(/\s+/g, "").toLowerCase() === handle;
+  }
   function facultyMissingData(c) {
     var role = (c.role || "").toLowerCase();
-    var faculty = /professor|instructor|lecturer|faculty/.test(role);
-    return faculty && !!(c.name || c.email) && (!c.lastName || !c.firstName || !c.semesters);
+    var staff = /professor|instructor|lecturer|faculty|\bta\b|teaching assistant|leader|coordinator|grader/.test(role);
+    if (!(c.name || c.email)) return false;
+    // A name that's just an email handle needs recovering no matter the role.
+    if (isEmailDerivedName(c)) return true;
+    return staff && (!c.lastName || !c.firstName || !c.semesters);
   }
   async function lookupContactOnline(contact, courseName) {
     var tools = [{ type: "web_search_20250305", name: "web_search", max_uses: 4 }];
@@ -2192,6 +2241,10 @@
     var user = "Instructor to research: " + who +
       (courseName ? "\nCourse: " + courseName : "") +
       (contact.email ? "\nEmail: " + contact.email : "") +
+      (isEmailDerivedName(contact) && contact.email
+        ? "\n\nNOTE: the name above was just guessed from the email handle and may be wrong. Search the university's online directory for the email address or username \"" +
+          String(contact.email).split("@")[0] + "\" to recover this person's REAL first and last name."
+        : "") +
       "\n\nUsing web search, find: their first name, their last name, and which semesters they normally teach " +
       "(e.g. \"Fall\", \"Spring\", \"Fall & Spring\", or specific terms like \"Fall 2026\"). " +
       "Reply with a one-line note about what you found, then on the FINAL line output ONLY a JSON object: " +
@@ -2220,9 +2273,12 @@
       try { found = await lookupContactOnline(c, course.name || ""); } catch (e) { found = null; }
       if (!found) continue;
       var touched = false;
-      if (!c.firstName && found.firstName) { c.firstName = String(found.firstName).trim(); touched = true; }
-      if (!c.lastName && found.lastName) { c.lastName = String(found.lastName).trim(); touched = true; }
-      if ((!c.name || !c.lastName) && (c.firstName || c.lastName)) c.name = (c.firstName + " " + c.lastName).trim();
+      // An email-derived guess ("Hanleyg") is not a real name — let a confirmed
+      // web result replace it, not just fill blanks.
+      var guessed = isEmailDerivedName(c);
+      if ((!c.firstName || guessed) && found.firstName) { c.firstName = String(found.firstName).trim(); touched = true; }
+      if ((!c.lastName || guessed) && found.lastName) { c.lastName = String(found.lastName).trim(); touched = true; }
+      if ((!c.name || !c.lastName || guessed) && (c.firstName || c.lastName)) c.name = (c.firstName + " " + c.lastName).trim();
       if (!c.semesters && found.semesters) { c.semesters = String(found.semesters).trim(); touched = true; }
       if (touched) {
         c.sourceDetail = c.sourceDetail && c.sourceDetail !== "manual" ? "syllabus+online" : "online";
@@ -2363,8 +2419,13 @@
     var context = course.materials.map(function (m) { return "### " + m.filename + "\n" + m.text; }).join("\n\n");
     var schema = { type: "object", properties: { topics: { type: "array", items: { type: "string" } } },
       required: ["topics"], additionalProperties: false };
-    var system = "Extract a concise list of study topics from the course materials. Return 4-8 short topic names (2-5 words each) covering the main ideas a student could practice. No numbering, no duplicates.";
-    return JSON.parse(await callClaude({ system: system, user: "COURSE MATERIALS:\n" + context, schema: schema })).topics || [];
+    var system = "Build a concise list of study topics for this course, drawing on BOTH the uploaded course materials AND the web. " +
+      "When the materials are thin or missing, use web search to find the course's real syllabus/schedule and pull the actual topics it covers. " +
+      "Return 4-8 short topic names (2-5 words each) naming the course's real subject matter a student could practice — NOT logistics words like the school, \"students\", \"homework\", or \"section\". No numbering, no duplicates.";
+    var user = "COURSE: " + (course.name || "a college course") +
+      (context ? "\n\nCOURSE MATERIALS:\n" + context : "\n\n(No materials uploaded — look the course up online.)");
+    var raw = await callClaude({ system: system, user: user, schema: schema, tools: webSearchTools(3), maxTokens: 2048 });
+    return (parseJsonLoose(raw) || {}).topics || [];
   }
 
   function localGenerateQuestions(course, topic, level, count) {
@@ -4835,7 +4896,7 @@
       if (enrichBtn) enrichBtn.onclick = async function () {
         if (!claudeReady()) { alert("Add your Anthropic API key to look people up online."); return; }
         if (course.contacts.filter(facultyMissingData).length === 0) {
-          alert("Nothing to look up — every professor already has a full name and semesters.\n\nTip: the syllabus is the primary source; the web is only a backup for blanks."); return;
+          alert("Nothing to look up — every instructor already has a full name and semesters.\n\nTip: the syllabus is the primary source; the web is only a backup for blanks and for names that came from an email handle."); return;
         }
         var orig = enrichBtn.innerHTML;
         enrichBtn.disabled = true; enrichBtn.innerHTML = IC.globe + "Searching…";
