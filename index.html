@@ -907,7 +907,7 @@
   // key in the git-ignored .env file (CLAUDE_API_KEY=…); serve.command
   // serves it and loadEnvKey() reads it into ENV_KEY. Nothing is hardcoded
   // here either way, so no key can ever be committed or pushed to GitHub.
-  var PROXY_URL = "";  // ← paste your Cloudflare Worker URL here
+  var PROXY_URL = "https://sista-proxy.purduehanley.workers.dev";  // Cloudflare Worker proxy (holds the shared key)
 
   var ENV_KEY = "";
   function getKey() { return ENV_KEY.trim(); }
