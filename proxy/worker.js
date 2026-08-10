@@ -18,6 +18,7 @@
 const ALLOWED_ORIGINS = [
   "https://gillianhanley.us",
   "https://www.gillianhanley.us",
+  "https://ghanley04.github.io",   // GitHub Pages deployment
   "http://localhost:8138",   // local dev (serve.command)
   "http://127.0.0.1:8138",
 ];
