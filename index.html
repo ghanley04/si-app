@@ -3036,9 +3036,28 @@
     }
     var leaderBox = "";
     if (leader && q.status === "pending") {
-      leaderBox = '<div class="qanswer-box"><textarea data-qreply="' + q.id + '" placeholder="Type your answer to this student…"></textarea>' +
+      // Staged AI help for the leader: first point to where the topic lives in
+      // the class materials, then reveal the full web-backed answer only on
+      // request. Kept in q.leaderAi (never rendered on the student's side).
+      var help;
+      if (!q.leaderAi) {
+        help = '<div class="qshowai-row"><span class="qshowai-hint">See where this is covered in your materials before you answer.</span>' +
+          '<button class="btn ghost sm" data-qlfind="' + q.id + '">' + IC.file + 'Find it in the materials</button></div>';
+      } else {
+        var lp = q.leaderAi.pointer
+          ? '<div class="qans-pointer">' + IC.file + '<div><div class="qans-lbl">Where it lives in the materials</div>' +
+              '<div class="qans-body">' + fmt(q.leaderAi.pointer) + '</div></div></div>'
+          : "";
+        var la = q.leaderAi.content
+          ? '<div class="qans ai"><div class="qans-lbl">' + IC.spark + 'AI answer · from your materials &amp; the web</div>' +
+              '<div class="qans-body">' + fmt(q.leaderAi.content) + '</div>' + qCitationsHTML(q.leaderAi.citations) +
+              '<div class="qshowai-row" style="margin-top:11px"><button class="btn ghost sm" data-qluse="' + q.id + '">' + IC.file + 'Insert into reply</button></div></div>'
+          : '<div class="qshowai-row"><span class="qshowai-hint">Want the full web-backed explanation?</span>' +
+              '<button class="btn ghost sm" data-qlshow="' + q.id + '">' + IC.spark + 'Show the AI answer</button></div>';
+        help = '<div class="qans-wrap">' + lp + la + '</div>';
+      }
+      leaderBox = help + '<div class="qanswer-box"><textarea data-qreply="' + q.id + '" placeholder="Type your answer to this student…"></textarea>' +
         '<div class="qanswer-actions">' +
-          '<button class="btn ghost sm" data-qdraft="' + q.id + '">' + IC.spark + 'AI draft</button>' +
           '<button class="btn primary sm" data-qpost="' + q.id + '">' + IC.send + 'Post answer</button>' +
         '</div></div>';
     }
@@ -3052,7 +3071,7 @@
       ? all.filter(function (q) { return q.status === "pending" || q.status === "answered"; })
       : all.filter(function (q) { return q.askerId === (session && session.id); });
     var lead = leader
-      ? 'Questions your students sent you — either asked directly or escalated after an AI answer wasn’t enough. Answer directly, or tap <strong>AI draft</strong> for a starting point from the class materials.'
+      ? 'Questions your students sent you — either asked directly or escalated after an AI answer wasn’t enough. Answer directly, or tap <strong>Find it in the materials</strong> to see where the topic is covered, then reveal a full AI answer you can build your reply from.'
       : 'Send your question to your SI leader. Before any AI answer, SISTA points you to <strong>where in your own notes</strong> the topic lives — the full AI answer stays hidden until you tap <strong>Show the AI answer</strong>. For open-ended help anytime, use the <strong>Chat</strong> tab.';
     var list = qs.length
       ? '<div class="qa-list">' + qs.map(function (q) { return questionCardHTML(q, leader); }).join("") + '</div>'
@@ -3099,6 +3118,36 @@
       alert("Couldn't generate an answer: " + e.message);
     }
   }
+  // Leader-side staged help. Stage 1: point the leader to where the topic is
+  // covered in the class materials. Stored in q.leaderAi (private to the leader
+  // — the student's card never renders it).
+  async function leaderFindInMaterials(cl, q, btn) {
+    var orig = btn ? btn.innerHTML : "";
+    if (btn) { btn.disabled = true; btn.innerHTML = IC.file + 'Finding it…'; }
+    try {
+      var pointer = await locateInMaterials(cl, q.text);
+      q.leaderAi = { pointer: pointer, content: "", citations: [], createdAt: Date.now() };
+      persist(); renderPage();
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+      alert("Couldn't look that up: " + e.message);
+    }
+  }
+  // Stage 2: the leader asked for the full web-backed answer — generate + reveal.
+  async function leaderRevealAnswer(cl, q, btn) {
+    var orig = btn ? btn.innerHTML : "";
+    if (btn) { btn.disabled = true; btn.innerHTML = IC.spark + 'Generating…'; }
+    try {
+      var ans = await answerQuestion(cl, q.text);
+      if (!q.leaderAi) q.leaderAi = { pointer: "", createdAt: Date.now() };
+      q.leaderAi.content = ans.content;
+      q.leaderAi.citations = ans.citations || [];
+      persist(); renderPage();
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+      alert("Couldn't generate an answer: " + e.message);
+    }
+  }
   // Shared wiring for the Ask board (both leader and student views).
   function wireAskBoard(cl, leader) {
     Array.prototype.forEach.call(pageEl.querySelectorAll("[data-qai]"), function (btn) {
@@ -3114,18 +3163,28 @@
       };
     });
     if (leader) {
-      Array.prototype.forEach.call(pageEl.querySelectorAll("[data-qdraft]"), function (btn) {
-        btn.onclick = async function () {
-          var id = btn.getAttribute("data-qdraft");
+      // Stage 1: find where the topic is covered in the class materials.
+      Array.prototype.forEach.call(pageEl.querySelectorAll("[data-qlfind]"), function (btn) {
+        btn.onclick = function () {
+          var q = clQuestions(cl).find(function (x) { return x.id === btn.getAttribute("data-qlfind"); });
+          if (q) leaderFindInMaterials(cl, q, btn);
+        };
+      });
+      // Stage 2: reveal the full web-backed AI answer.
+      Array.prototype.forEach.call(pageEl.querySelectorAll("[data-qlshow]"), function (btn) {
+        btn.onclick = function () {
+          var q = clQuestions(cl).find(function (x) { return x.id === btn.getAttribute("data-qlshow"); });
+          if (q) leaderRevealAnswer(cl, q, btn);
+        };
+      });
+      // Drop the revealed AI answer into the reply box as a starting draft.
+      Array.prototype.forEach.call(pageEl.querySelectorAll("[data-qluse]"), function (btn) {
+        btn.onclick = function () {
+          var id = btn.getAttribute("data-qluse");
           var q = clQuestions(cl).find(function (x) { return x.id === id; });
           var ta = pageEl.querySelector('[data-qreply="' + id + '"]');
-          if (!q || !ta) return;
-          var orig = btn.innerHTML; btn.disabled = true; btn.innerHTML = IC.spark + 'Drafting…';
-          try {
-            var ans = await answerQuestion(cl, q.text);
-            ta.value = ans.content; ta.focus();
-          } catch (e) { alert("Couldn't draft an answer: " + e.message); }
-          btn.disabled = false; btn.innerHTML = orig;
+          if (!q || !ta || !q.leaderAi) return;
+          ta.value = q.leaderAi.content; ta.focus();
         };
       });
       Array.prototype.forEach.call(pageEl.querySelectorAll("[data-qpost]"), function (btn) {
