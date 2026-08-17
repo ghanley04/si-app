@@ -305,6 +305,8 @@
   .bubble.assistant { align-self:flex-start; background:var(--panel-bg); color:var(--text);
     border:1px solid var(--border); border-radius:15px 15px 15px 4px; }
   .bubble.user { white-space:pre-wrap; }
+  /* staged chat answer: notes pointer + revealed AI answer, aligned like an assistant bubble */
+  .chat-answer { align-self:flex-start; max-width:80%; display:flex; flex-direction:column; gap:11px; }
   /* rendered markdown (fmt) — used in AI answers, chat, leader replies */
   .md-p { margin:0 0 9px; }
   .md-p:last-child, .md-list:last-child, .md-h:last-child, .md-math:last-child { margin-bottom:0; }
@@ -927,6 +929,14 @@
     font-size:12.5px; font-weight:600; cursor:pointer; border-radius:8px; padding:6px 11px; display:inline-flex; align-items:center; gap:6px; }
   .person .kick:hover { color:var(--danger); border-color:var(--danger); background:var(--hover-soft); }
   .person .kick .i { width:14px; height:14px; }
+  .person .upgrade { border:1px solid var(--border-strong); background:transparent; color:var(--text-muted); font-family:inherit;
+    font-size:12.5px; font-weight:600; cursor:pointer; border-radius:8px; padding:6px 11px; display:inline-flex; align-items:center; gap:6px; }
+  .person .upgrade:hover { color:var(--accent-solid-fg); border-color:var(--accent); background:var(--accent-soft-bg); }
+  .person .upgrade.on { color:var(--accent-solid-fg); border-color:var(--accent); background:var(--accent-soft-bg); }
+  .person .upgrade .i { width:14px; height:14px; }
+  .person .pname .pbadge { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; color:var(--accent-solid-fg);
+    margin-left:8px; text-transform:uppercase; letter-spacing:.04em; vertical-align:middle; }
+  .person .pname .pbadge .i { width:12px; height:12px; }
   .ccard-code { font-family:var(--mono); font-weight:700; letter-spacing:.1em; font-size:11.5px; color:var(--text-muted); }
   .mat.readonly { opacity:1; }
   .gen-source-row { display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 4px; }
@@ -1236,7 +1246,8 @@
     check:'<svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>',
     help:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.6 2.2-2.6 4M12 17.5v.01"/></svg>',
     megaphone:'<svg class="i" viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 0 0 1 1h2l9 5V5L6 10H4a1 1 0 0 0-1 1z"/><path d="M18 8a4 4 0 0 1 0 8"/></svg>',
-    lock:'<svg class="i" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
+    lock:'<svg class="i" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+    download:'<svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4M5 21h14"/></svg>'
   };
 
   // ---------- theme ----------
@@ -1318,17 +1329,19 @@
     if (!c.plans) c.plans = [];
     if (!c.topics) c.topics = [];
     if (!c.members) c.members = [];
+    // Per-student "upgraded" access. The leader grants it from the People tab;
+    // only upgraded members can open the practice sessions the leader posts.
+    // Non-upgraded members keep materials, announcements, and every self-serve
+    // tool. Backfill older members as not upgraded — the leader turns it on.
+    (c.members || []).forEach(function (m) { if (m.upgraded === undefined) m.upgraded = false; });
     if (!c.chat) c.chat = [];
     if (!c.questions) c.questions = [];
     // Leader announcements (class reminders, attendance notes) students can read.
     if (!c.announcements) c.announcements = [];
-    // Attendance-gated sessions: a leader can lock a published session so only
-    // students they mark as having attended class can open it. Backfill older
-    // sessions as open (gated:false) so nothing that was visible disappears.
-    (c.sessions || []).forEach(function (s) {
-      if (s.gated === undefined) s.gated = false;
-      if (!s.allowedStudents) s.allowedStudents = [];
-    });
+    // Access to posted sessions is now controlled per-student via "upgraded"
+    // access on the member record (see above), not per-session. The old
+    // per-session `gated`/`allowedStudents` fields are left on legacy data
+    // untouched — nothing reads them anymore.
     // A question's status drives who's on the hook. Older saved questions had
     // no status: treat an answered one as "answered", anything else as
     // "pending" (awaiting the leader), matching the old always-notify behavior.
@@ -1429,6 +1442,11 @@
   // Classrooms this student has joined (membership carries their session id).
   function isMember(c) { return !!(session && (c.members || []).some(function (m) { return m.id === session.id; })); }
   function joinedClassrooms() { return state.classrooms.filter(isMember); }
+  // A member's record in a classroom, and their leader-granted "upgraded" flag.
+  // Upgraded members may open the practice sessions the leader posts; others
+  // can't (but keep materials, announcements, and every self-serve tool).
+  function memberRec(c, id) { return (c.members || []).find(function (m) { return m.id === id; }) || null; }
+  function isUpgraded(c) { var m = session && memberRec(c, session.id); return !!(m && m.upgraded); }
   function genCode() {
     var alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", code;
     do {
@@ -3282,10 +3300,17 @@
       body = '<div class="empty" style="padding:40px 20px">' + IC.users +
         '<div class="big">No students yet</div><div class="sm">Share the join code above to fill your roster.</div></div>';
     } else {
-      body = '<div class="people-list">' + cl.members.map(function (m) {
+      var upCount = cl.members.filter(function (m) { return m.upgraded; }).length;
+      var lead = '<div class="soft-note">' + IC.spark + '<span><strong>Upgraded access</strong> lets a student open the practice sessions you post. ' +
+        'Everyone keeps your materials, announcements, and their own study tools — upgrading just unlocks your posted sessions. ' +
+        '<strong>' + upCount + '</strong> of ' + cl.members.length + ' upgraded.</span></div>';
+      body = lead + '<div class="people-list">' + cl.members.map(function (m) {
+        var up = !!m.upgraded;
         return '<div class="person"><div class="av">' + esc(initialsOf(m.name)) + '</div>' +
-          '<div class="pinfo"><div class="pname">' + esc(m.name) + '</div>' +
+          '<div class="pinfo"><div class="pname">' + esc(m.name) + (up ? '<span class="pbadge">' + IC.spark + 'Upgraded</span>' : '') + '</div>' +
             '<div class="pmeta">Joined ' + new Date(m.joinedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" }) + '</div></div>' +
+          '<button class="upgrade' + (up ? ' on' : '') + '" data-upgrade="' + m.id + '" aria-pressed="' + up + '">' +
+            IC.spark + (up ? 'Upgraded' : 'Upgrade') + '</button>' +
           '<button class="kick" data-kick="' + m.id + '">' + IC.ban + 'Remove</button></div>';
       }).join("") + '</div>';
     }
@@ -3325,7 +3350,7 @@
     return '<div class="content-inner">' +
       '<p class="sec-lead">Announcements and reminders from your SI leader.</p>' +
       classNudgeHTML() +
-      '<div class="soft-note">' + IC.key + '<span>Heads up: your SI leader can set some practice sessions to <strong>unlock only for students who attended class</strong>. If a session looks locked, go to class — then ask your leader to grant you access.</span></div>' +
+      '<div class="soft-note">' + IC.spark + '<span>Heads up: the practice sessions your SI leader posts unlock only for students with <strong>upgraded access</strong>. If you don’t see your leader’s sessions yet, ask them to upgrade your access.</span></div>' +
       announcementsListHTML(cl, false) + '</div>';
   }
 
@@ -3382,23 +3407,19 @@
       roomGroundChip(cl) + picker + gate + worksheet;
   }
 
-  // Per-session attendance gate: the leader locks a published session so only
-  // the students they check (those who came to class) can open it.
+  // Who can open the sessions you post is controlled per-student on the People
+  // tab via "upgraded access" — not per session. This note points leaders there.
   function sessionGateHTML(cl, s) {
-    var gated = !!s.gated;
     var roster = cl.members || [];
-    var checks = roster.length
-      ? '<div class="gate-students">' + roster.map(function (m) {
-          var on = (s.allowedStudents || []).indexOf(m.id) !== -1;
-          return '<label class="gate-student"><input type="checkbox" data-gatestudent="' + m.id + '"' +
-            (on ? ' checked' : '') + (gated ? '' : ' disabled') + ' /> ' + esc(m.name) + '</label>';
-        }).join("") + '</div>'
-      : '<div class="hint" style="margin-top:8px">No students have joined yet — share your join code first.</div>';
-    return '<div class="session-gate' + (gated ? ' on' : '') + '">' +
-      '<label class="gate-toggle"><input type="checkbox" id="gateToggle"' + (gated ? ' checked' : '') + ' />' +
-        IC.lock + '<span>Require class attendance to open this session</span></label>' +
-      '<p class="hint">When on, only the students you check below can open this session in their Practice sessions tab — a way to reward the students who came to class. Students are told their SI leader controls this.</p>' +
-      checks + '</div>';
+    var upCount = roster.filter(function (m) { return m.upgraded; }).length;
+    var who = roster.length
+      ? '<strong>' + upCount + '</strong> of ' + roster.length + ' student' + (roster.length === 1 ? '' : 's') +
+        ' can open your posted sessions right now.'
+      : 'No students have joined yet — share your join code first.';
+    return '<div class="session-gate on">' +
+      '<label class="gate-toggle">' + IC.spark + '<span>Only students with upgraded access see this</span></label>' +
+      '<p class="hint">The sessions you post are visible only to students you’ve given <strong>upgraded access</strong>. ' +
+        'Grant or revoke it per student on the <strong>People</strong> tab. ' + who + '</p></div>';
   }
 
   // The optional SI session-plan builder. Generates a full Purdue Session
@@ -3481,6 +3502,150 @@
       '</details>';
   }
 
+  // ---------- Export a session plan (PDF via print, or editable Word .doc) ----------
+  // Leaders turn plans in on the Purdue Session Planning Form. These build ONE
+  // self-contained, form-styled document from a plan's own fields — no server and
+  // no libraries. "Export PDF" opens the document and triggers the browser's
+  // print dialog (Save as PDF); "Export Word" downloads an HTML-based .doc that
+  // opens fully editable in Word (also Pages / Google Docs) for later tweaks.
+  function planExportFilename(plan, ext) {
+    var base = String(plan.topic || "SI Session Plan").replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-");
+    return "Session-Plan_" + (base || "SI-Session-Plan") + "." + ext;
+  }
+  // The shared document body: a printable Purdue-style Session Planning Form.
+  function planExportHTML(plan, cl, forWord) {
+    var c = plan.content || {};
+    function ml(v) { return esc(v).replace(/\n/g, "<br>"); }
+    var meta = [
+      ["Course", cl && cl.name], ["SI Leader", cl && cl.leaderName],
+      ["Week no.", plan.weekNo], ["Session no.", plan.sessionNo],
+      ["Session time", plan.sessionTime], ["Date exported", new Date().toLocaleDateString()]
+    ].filter(function (r) { return r[1]; });
+    var metaRows = meta.map(function (r) {
+      return '<tr><td class="k">' + esc(r[0]) + '</td><td class="v">' + esc(r[1]) + '</td></tr>';
+    }).join("");
+    var metaTable = metaRows ? '<table class="meta"><tbody>' + metaRows + '</tbody></table>' : "";
+
+    var objective = c.objectives
+      ? '<div class="sec"><div class="sec-h">Session objective</div><div class="prose">' + ml(c.objectives) + '</div></div>' : "";
+
+    var tools = c.tools || {};
+    var toolList = [tools.tool1, tools.tool2].filter(Boolean);
+    var toolsBlock = toolList.length
+      ? '<div class="sec"><div class="sec-h">The two SI tools for this session</div><ul class="tools">' +
+          toolList.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join("") + '</ul></div>' : "";
+
+    function fieldRow(label, val, multiline) {
+      if (!val) return "";
+      return '<tr><td class="lbl">' + esc(label) + '</td><td class="val">' + (multiline ? ml(val) : esc(val)) + '</td></tr>';
+    }
+    function problemsRow(a) {
+      if (!a.problems || !a.problems.length) return "";
+      var items = a.problems.map(function (p) {
+        var q = typeof p === "string" ? p : (p.q || "");
+        var ans = typeof p === "string" ? "" : (p.answer || "");
+        return '<li>' + ml(q) + (ans ? '<div class="ans"><span class="ans-l">Answer:</span> ' + ml(ans) + '</div>' : '') + '</li>';
+      }).join("");
+      return '<tr><td class="lbl">Practice problems</td><td class="val"><ol class="probs">' + items + '</ol></td></tr>';
+    }
+    var acts = (c.activities || []).map(function (a, i) {
+      var badges = [];
+      if (a.duration) badges.push(esc(a.duration));
+      if (a.optional) badges.push("Optional");
+      if (a.clt) badges.push("CLT: " + esc(a.clt));
+      if (a.strategy) badges.push("Strategy: " + esc(a.strategy));
+      return '<table class="act"><tbody>' +
+        '<tr class="act-h"><td class="num">' + (i + 1) + '</td><td class="act-t">' + esc(a.title || "Activity") +
+          (badges.length ? '<div class="badges">' + badges.join(' &nbsp;·&nbsp; ') + '</div>' : '') + '</td></tr>' +
+        fieldRow("Objective / content", a.objective, true) +
+        fieldRow("References", a.references, true) +
+        fieldRow("Activity breakdown", a.breakdown, true) +
+        fieldRow("Check for understanding", a.cfu, true) +
+        problemsRow(a) +
+        '</tbody></table>';
+    }).join("");
+    var actsBlock = acts ? '<div class="sec"><div class="sec-h">Session activities</div>' + acts + '</div>' : "";
+
+    var extras = (c.extraProblems || []).filter(function (ex) { return ex.problems && ex.problems.length; });
+    var extraBlock = extras.length
+      ? '<div class="sec"><div class="sec-h">Additional practice problems</div>' +
+          extras.map(function (ex) {
+            return '<table class="act"><tbody><tr class="act-h"><td class="num">+</td><td class="act-t">' +
+              esc(ex.topic || "Extra activity") + '</td></tr>' + problemsRow(ex) + '</tbody></table>';
+          }).join("") + '</div>'
+      : "";
+
+    var materials = (c.materialsNeeded && c.materialsNeeded.length)
+      ? '<div class="sec"><div class="sec-h">Materials to prepare</div><ul class="mats">' +
+          c.materialsNeeded.map(function (m) { return '<li>' + esc(m) + '</li>'; }).join("") + '</ul></div>' : "";
+
+    var reminder = c.leaderReminder
+      ? '<div class="sec"><div class="sec-h">Reminder for students to study on their own</div><div class="prose">' + ml(c.leaderReminder) + '</div></div>' : "";
+
+    var style =
+      '@page { size: letter; margin: 0.7in; }' +
+      'body { font-family: Calibri, "Segoe UI", Arial, sans-serif; color:#1c1c1c; font-size:11pt; line-height:1.42; margin:0; }' +
+      '.wrap { max-width:7.1in; margin:0 auto; }' +
+      '.bar { border-top:5px solid #CEB888; padding-top:12px; margin-bottom:6px; }' +
+      'h1 { font-size:21pt; margin:0; letter-spacing:-0.2px; }' +
+      '.topic { font-size:13pt; color:#3a3a3a; margin:2px 0 0; }' +
+      '.sub { color:#7a7a7a; font-size:9.5pt; margin:3px 0 14px; }' +
+      '.meta { border-collapse:collapse; width:100%; margin:0 0 16px; }' +
+      '.meta td { border:1px solid #d9d4c4; padding:5px 9px; font-size:10pt; vertical-align:top; }' +
+      '.meta td.k { background:#f6f2e6; font-weight:bold; width:1.6in; color:#5a5133; white-space:nowrap; }' +
+      '.sec { margin:0 0 16px; }' +
+      '.sec-h { font-size:11.5pt; font-weight:bold; color:#8a7a3a; border-bottom:2px solid #CEB888; padding-bottom:3px; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.4px; }' +
+      '.prose { white-space:normal; }' +
+      'ul.tools { margin:0; padding-left:20px; } ul.tools li { margin:2px 0; font-weight:bold; }' +
+      'table.act { border-collapse:collapse; width:100%; margin:0 0 12px; page-break-inside:avoid; }' +
+      'table.act td { border:1px solid #ddd; padding:6px 9px; font-size:10.5pt; vertical-align:top; }' +
+      'tr.act-h td { background:#2b2b2b; color:#fff; border-color:#2b2b2b; font-weight:bold; }' +
+      'td.num { width:0.35in; text-align:center; font-size:12pt; }' +
+      'td.act-t { font-size:11.5pt; }' +
+      '.badges { font-weight:normal; font-size:9pt; color:#e8e2cf; margin-top:3px; }' +
+      'td.lbl { width:1.7in; background:#fafafa; font-weight:bold; color:#555; font-size:9.5pt; }' +
+      'ol.probs { margin:0; padding-left:20px; } ol.probs li { margin:0 0 6px; }' +
+      '.ans { margin-top:2px; color:#3a3a3a; } .ans-l { font-weight:bold; color:#8a7a3a; }' +
+      'ul.mats { margin:0; padding-left:20px; } ul.mats li { margin:2px 0; }' +
+      '.foot { margin-top:22px; padding-top:8px; border-top:1px solid #e2e2e2; color:#9a9a9a; font-size:8.5pt; text-align:center; }';
+
+    var head = forWord
+      ? '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
+        '<head><meta charset="utf-8"><title>' + esc(plan.topic || "SI Session Plan") + '</title>' +
+        '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->' +
+        '<style>' + style + '</style></head>'
+      : '<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
+        '<title>' + esc(plan.topic || "SI Session Plan") + '</title><style>' + style + '</style></head>';
+
+    return '<!doctype html>' + head + '<body><div class="wrap">' +
+      '<div class="bar"><h1>SI Session Plan</h1>' +
+        (plan.topic ? '<div class="topic">' + esc(plan.topic) + '</div>' : '') +
+        '<div class="sub">Supplemental Instruction · Session Planning Form</div></div>' +
+      metaTable + objective + toolsBlock + actsBlock + extraBlock + materials + reminder +
+      '<div class="foot">Prepared with SIsta</div>' +
+      '</div></body></html>';
+  }
+  function exportPlanPDF(plan, cl) {
+    var w = window.open("", "_blank");
+    if (!w) { alert("Please allow pop-ups for this site to export as PDF."); return; }
+    w.document.open();
+    w.document.write(planExportHTML(plan, cl, false));
+    w.document.close();
+    w.focus();
+    // Let the new document lay out before invoking the print/Save-as-PDF dialog.
+    setTimeout(function () { try { w.print(); } catch (e) {} }, 400);
+  }
+  function exportPlanWord(plan, cl) {
+    var html = planExportHTML(plan, cl, true);
+    // A BOM + msword MIME makes Word/Pages/Docs open the HTML as an editable doc.
+    var blob = new Blob(["\ufeff", html], { type: "application/msword" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = planExportFilename(plan, "doc");
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  }
+
   // The leader's full view of one session plan: editable header fields, the
   // activity cards, materials to prep, and the post/edit/regenerate actions.
   function renderPlanView(plan, cl) {
@@ -3526,6 +3691,8 @@
       : '<button class="btn primary sm" id="planPostBtn">' + IC.school + 'Post as virtual session</button>';
     var actions = '<div class="plan-actions">' +
       '<button class="btn ghost sm" id="planEditBtn">' + IC.edit + 'Edit plan</button>' +
+      '<button class="btn ghost sm" id="planPdfBtn">' + IC.download + 'Export PDF</button>' +
+      '<button class="btn ghost sm" id="planDocBtn">' + IC.download + 'Export Word</button>' +
       postBtn +
       '<button class="btn ghost sm" id="planDelBtn">' + IC.trash + 'Delete</button></div>';
     var postedNote = plan.posted
@@ -3677,13 +3844,12 @@
       '</div>';
   }
   // Which session the Sessions tab lands on: the student's explicit pick, else the
-  // Leader sessions this student is allowed to open: all ungated ones, plus any
-  // gated session the leader has granted them (for attending class).
+  // Leader sessions this student is allowed to open. Access is all-or-nothing
+  // per student: upgraded members see every session the leader posts; everyone
+  // else sees none (they still get materials, announcements, and their own
+  // self-generated sessions).
   function visibleLeaderSessions(cl) {
-    var me = session && session.id;
-    return (cl.sessions || []).filter(function (s) {
-      return !s.gated || (s.allowedStudents || []).indexOf(me) !== -1;
-    });
+    return isUpgraded(cl) ? (cl.sessions || []).slice() : [];
   }
   // leader's newest (that's the point of the tab), else their own newest.
   function classroomActiveSession(cl, en) {
@@ -3726,10 +3892,10 @@
       '<div class="gen-row"><input type="text" id="roomGenTopic" placeholder="Or type any topic, e.g. titration curves" />' +
         '<button class="btn primary" id="roomGenBtn">' + IC.spark + 'Generate session</button></div>';
 
-    // Locked-session notice: some leader sessions are gated behind class attendance.
+    // Locked-session notice: the leader's posted sessions need upgraded access.
     var lockNotice = lockedCount
-      ? '<div class="soft-note">' + IC.lock + '<span>' + lockedCount + ' session' + (lockedCount === 1 ? ' is' : 's are') +
-        ' locked — your SI leader unlocks these for students who attended class. Go to class, then ask your leader to grant you access.</span></div>'
+      ? '<div class="soft-note">' + IC.lock + '<span>Your SI leader has posted ' + lockedCount + ' session' + (lockedCount === 1 ? '' : 's') +
+        ', but they’re locked — opening them needs <strong>upgraded access</strong>. Ask your leader to upgrade you. You can still make your own below.</span></div>'
       : "";
 
     if (!all.length) {
@@ -3934,6 +4100,15 @@
         setTimeout(function () { copy.innerHTML = IC.copy + "Copy code"; }, 1400);
       } catch (e) { alert("Class code: " + cl.code); }
     };
+    Array.prototype.forEach.call(pageEl.querySelectorAll("[data-upgrade]"), function (b) {
+      b.onclick = function () {
+        var id = b.getAttribute("data-upgrade");
+        var m = cl.members.find(function (x) { return x.id === id; });
+        if (!m) return;
+        m.upgraded = !m.upgraded;
+        persist(); renderPage();
+      };
+    });
     Array.prototype.forEach.call(pageEl.querySelectorAll("[data-kick]"), function (b) {
       b.onclick = function () {
         var id = b.getAttribute("data-kick");
@@ -4018,24 +4193,8 @@
     var active = cl.sessions[cl.sessions.length - 1];
     if (view.clSession) active = cl.sessions.find(function (s) { return s.id === view.clSession; }) || active;
     if (active) { if (!active.grades) active.grades = {}; wireWorksheet(cl, active, active.grades); wireSessionEditor(active); }
-
-    // Attendance gate: toggle locking, and check off who may open this session.
-    if (active) {
-      var gateToggle = document.getElementById("gateToggle");
-      if (gateToggle) gateToggle.onclick = function () {
-        active.gated = gateToggle.checked; persist(); renderPage();
-      };
-      Array.prototype.forEach.call(pageEl.querySelectorAll("[data-gatestudent]"), function (cb) {
-        cb.onclick = function () {
-          if (!active.allowedStudents) active.allowedStudents = [];
-          var id = cb.getAttribute("data-gatestudent");
-          var i = active.allowedStudents.indexOf(id);
-          if (cb.checked && i === -1) active.allowedStudents.push(id);
-          else if (!cb.checked && i !== -1) active.allowedStudents.splice(i, 1);
-          persist();
-        };
-      });
-    }
+    // Access to posted sessions is set per-student on the People tab (upgraded
+    // access), so there's nothing to wire on the session itself anymore.
   }
 
   function activePlan(cl) {
@@ -4078,6 +4237,10 @@
       cl.plans = cl.plans.filter(function (p) { return p.id !== plan.id; });
       view.clPlan = null; view.editPlan = null; persist(); renderPage();
     };
+    var pdfBtn = document.getElementById("planPdfBtn");
+    if (pdfBtn) pdfBtn.onclick = function () { exportPlanPDF(plan, cl); };
+    var docBtn = document.getElementById("planDocBtn");
+    if (docBtn) docBtn.onclick = function () { exportPlanWord(plan, cl); };
 
     // Per-activity "Make practice problems" — the only AI in the plan builder.
     Array.prototype.forEach.call(pageEl.querySelectorAll("[data-actproblems]"), function (btn) {
@@ -4820,20 +4983,111 @@
       '<div class="grade-sub">' + sub + '</div>';
   }
 
+  // Reusable "Look in your notes first" pointer box (Ask board + chat share it).
+  function notesPointerHTML(pointer) {
+    return '<div class="qans-pointer">' + IC.file + '<div><div class="qans-lbl">Look in your notes first</div>' +
+      '<div class="qans-body">' + fmt(pointer) + '</div></div></div>';
+  }
   function renderChat(course) {
     var log = course.chat.length === 0
-      ? '<div class="empty" style="padding:48px 20px">' + IC.spark + '<div class="big">Ask about this course</div><div class="sm">Answers are grounded in whatever materials you\'ve uploaded.</div></div>'
+      ? '<div class="empty" style="padding:48px 20px">' + IC.spark + '<div class="big">Ask about this course</div><div class="sm">SISTA points you to where the topic lives in your own materials first — the AI answer stays hidden until you ask to see it.</div></div>'
       : course.chat.map(function (m) {
-          var src = (m.citations && m.citations.length)
+          if (m.role !== "assistant") return '<div class="bubble user">' + esc(m.content) + '</div>';
+          // Staged assistant turn: a pointer to the student's own notes first, with
+          // the full AI answer hidden until they tap "Show the AI answer".
+          if (m.pointer !== undefined) {
+            var pointer = m.pointer ? notesPointerHTML(m.pointer) : "";
+            var answer;
+            if (m.content) {
+              var src = (m.citations && m.citations.length)
+                ? '<div class="sources">' + m.citations.map(function (c) { return '<span class="chip">' + IC.file + '[' + c.index + '] ' + esc(c.filename) + '</span>'; }).join("") + '</div>'
+                : "";
+              answer = '<div class="qans ai"><div class="qans-lbl">' + IC.spark + 'AI answer · from your materials &amp; the web</div>' +
+                '<div class="qans-body">' + fmt(m.content) + '</div>' + src + '</div>';
+            } else {
+              answer = '<div class="qshowai-row"><span class="qshowai-hint">Checked your notes and still stuck?</span>' +
+                '<button class="btn ghost sm" data-chatshowai="' + m.id + '">' + IC.spark + 'Show the AI answer</button></div>';
+            }
+            return '<div class="chat-answer">' + pointer + answer + '</div>';
+          }
+          // Legacy / plain assistant bubble (older chats saved before staging).
+          var srcs = (m.citations && m.citations.length)
             ? '<div class="sources">' + m.citations.map(function (c) { return '<span class="chip">' + IC.file + '[' + c.index + '] ' + esc(c.filename) + '</span>'; }).join("") + '</div>'
             : "";
-          return '<div class="bubble ' + m.role + '">' + (m.role === "assistant" ? fmt(m.content) : esc(m.content)) + src + '</div>';
+          return '<div class="bubble assistant">' + fmt(m.content) + srcs + '</div>';
         }).join("");
     return '<div class="chat-pane"><div class="thread" id="chatLog">' + log + '</div>' +
       '<div class="composer-wrap"><div class="composer">' +
         '<input type="text" id="chatInput" placeholder="Ask about this course…" />' +
         '<button class="send" id="sendBtn" aria-label="Send">' + IC.send + '</button>' +
       '</div></div></div>';
+  }
+
+  // Group-voice → solo-voice phrasebook. Sessions are written in SI group voice
+  // ("explain to a partner", "work with your group"); when a student studies
+  // Individually we rewrite that wording so the same question reads correctly for
+  // one person working alone. This is a FIXED, deterministic phrasebook — NO AI /
+  // no model call — so the substance of a question never changes, only the
+  // collaboration cue around it. Rules are applied in order; longer, more
+  // specific phrases come first so they win over the shorter fragments nested
+  // inside them (e.g. "explain to a partner" before "a partner").
+  var SOLO_REWRITES = [
+    // Explain / teach out loud
+    [/\bexplain(?:\s+it|\s+your\s+reasoning|\s+your\s+thinking)?\s+to\s+(?:a|your)\s+partner\b/gi, "explain it out loud to yourself"],
+    [/\bexplain(?:\s+it|\s+your\s+reasoning|\s+your\s+thinking)?\s+to\s+(?:the|your)\s+group\b/gi, "explain it out loud to yourself"],
+    [/\bexplain\s+to\s+(?:a|your)\s+partner\b/gi, "explain out loud to yourself"],
+    [/\bteach\s+(?:it\s+)?to\s+(?:a|your)\s+partner\b/gi, "teach it out loud to yourself"],
+    [/\bteach\s+(?:it\s+)?to\s+(?:the|your)\s+group\b/gi, "teach it out loud to yourself"],
+    // Turn-taking / paired talk
+    [/\btake\s+turns\s+explaining\b/gi, "explain"],
+    [/\btake\s+turns\b/gi, "work through each step"],
+    [/\bturn\s+to\s+(?:a|your)\s+partner\s+and\b/gi, "out loud to yourself,"],
+    [/\bturn\s+to\s+(?:a|your)\s+partner\b/gi, "talk it through out loud to yourself"],
+    [/\bthink[\s\-\/]+pair[\s\-\/]+share\b/gi, "think it through, then say your answer out loud"],
+    // Quizzing / comparing
+    [/\bquiz\s+each\s+other\b/gi, "quiz yourself"],
+    [/\bquiz\s+(?:a|your)\s+partner\b/gi, "quiz yourself"],
+    [/\bcompare\s+(?:your\s+)?answers?\s+with\s+(?:a\s+partner|your\s+partner|your\s+group|the\s+group|(?:your\s+)?classmates?)\b/gi, "check your answer against the answer key"],
+    [/\bcheck\s+(?:your\s+)?answers?\s+with\s+(?:a\s+partner|your\s+partner|your\s+group|the\s+group|(?:your\s+)?classmates?)\b/gi, "check your answer against the answer key"],
+    // Discuss / work together
+    [/\bdiscuss(?:\s+this|\s+it)?\s+with\s+(?:a\s+partner|your\s+partner|your\s+group|the\s+group|(?:your\s+)?classmates?)\b/gi, "think through on your own"],
+    [/\bwork(?:ing)?\s+(?:this\s+|it\s+)?(?:out\s+|through\s+)?(?:together\s+)?with\s+(?:a\s+partner|your\s+partner|your\s+group|the\s+group|(?:your\s+)?classmates?)\b/gi, "work it through on your own"],
+    [/\bwork(?:\s+together)?\s+in\s+(?:pairs|groups|small\s+groups)\b/gi, "work on your own"],
+    [/\bhave\s+each\s+person\b/gi, "make sure you"],
+    [/\beach\s+group\s+member\b/gi, "you"],
+    // Standalone collaboration phrases
+    [/\bas\s+a\s+(?:group|class|team)\b/gi, "on your own"],
+    [/\bwith\s+(?:a|your)\s+(?:partner|group|team|classmates?)\b/gi, "on your own"],
+    [/\bin\s+(?:a\s+group|your\s+group|pairs|small\s+groups|class)\b/gi, "on your own"],
+    [/\btogether\s+as\s+a\s+(?:group|class|team)\b/gi, "on your own"],
+    // Residual pronoun/noun references to the group
+    [/\byour\s+group(?:\s*mates)?\b/gi, "yourself"],
+    [/\bthe\s+group\b/gi, "yourself"],
+    [/\byour\s+partner\b/gi, "yourself"],
+    [/\byour\s+teammates?\b/gi, "yourself"],
+    [/\byour\s+classmates?\b/gi, "yourself"],
+    // Where the work happens
+    [/\bon\s+the\s+(?:white\s*board|board)\b/gi, "on paper"]
+  ];
+  // Copy the source phrase's leading capitalization onto the replacement, so a
+  // rewrite at the start of a sentence stays capitalized.
+  function soloPreserveCase(match, repl) {
+    var mi = match.search(/[A-Za-z]/), ri = repl.search(/[A-Za-z]/);
+    if (mi >= 0 && ri >= 0 && match[mi] === match[mi].toUpperCase()) {
+      return repl.slice(0, ri) + repl[ri].toUpperCase() + repl.slice(ri + 1);
+    }
+    return repl;
+  }
+  // Rewrite one string from group voice to solo voice. Deterministic; safe to
+  // call on any worksheet field (question, answer, hint). Returns text unchanged
+  // when nothing matches.
+  function toSoloText(text) {
+    if (!text) return text;
+    var out = String(text);
+    SOLO_REWRITES.forEach(function (rule) {
+      out = out.replace(rule[0], function (m) { return soloPreserveCase(m, rule[1]); });
+    });
+    return out;
   }
 
   // Study-mode toggle shown above a session worksheet: solo self-study vs.
@@ -4848,7 +5102,7 @@
       '</div></div>';
     var banner = mode === "group"
       ? '<div class="study-mode-banner">' + IC.users + '<span><strong>Studying together?</strong> Take turns revealing one question at a time, have each person explain their reasoning out loud before you check the answer, and let whoever\'s least sure go first. Grade honestly as a group.</span></div>'
-      : "";
+      : '<div class="study-mode-banner">' + IC.cap + '<span><strong>Studying solo?</strong> The group cues below are adapted for one person — where a question says to explain to a partner, explain out loud to yourself. Reveal one answer at a time and grade yourself honestly.</span></div>';
     return toggle + banner;
   }
   function wireStudyMode() {
@@ -4925,10 +5179,16 @@
     // A leader reviewing their own session sees every answer up front and never
     // self-grades — they're checking and editing the material, not practicing it.
     var leaderMode = !!opts.editable;
+    // Solo mode rewrites group-study wording into solo wording for display only
+    // (see toSoloText). Never applied in leaderMode — a leader edits the canonical
+    // group-voice session, not a student's adapted view.
+    var solo = !leaderMode && view.studyMode !== "group";
     var c = s.content, grades = gradesOverride || s.grades || {};
-    // Old sessions stored plain strings; newer ones store {q, answer}.
-    function qText(it) { return typeof it === "string" ? it : (it.q || it.prompt || ""); }
-    function qAns(it) { return typeof it === "string" ? "" : (it.answer || ""); }
+    // Old sessions stored plain strings; newer ones store {q, answer}. In solo
+    // mode the displayed text is rewritten to solo voice; the stored session is
+    // never mutated, so switching back to Group restores the original wording.
+    function qText(it) { var t = typeof it === "string" ? it : (it.q || it.prompt || ""); return solo ? toSoloText(t) : t; }
+    function qAns(it) { var a = typeof it === "string" ? "" : (it.answer || ""); return solo ? toSoloText(a) : a; }
     // If an item cites a specific material, link back to it in the Materials tab.
     function qSource(it) {
       var name = (it && typeof it === "object") ? (it.source || "") : "";
@@ -4957,7 +5217,7 @@
       } else {
         answer = '<div class="answer answer-none">No answer key for this item — add an Anthropic API key to generate one.</div>';
       }
-      var hint = (hasHint && it.hint) ? '<div class="hint">Hint: ' + esc(it.hint) + '</div>' : '';
+      var hint = (hasHint && it.hint) ? '<div class="hint">Hint: ' + esc(solo ? toSoloText(it.hint) : it.hint) + '</div>' : '';
       var src = qSource(it);
       var srcRow = src ? '<div class="q-source-row">' + src + '</div>' : '';
       if (leaderMode) {
@@ -4988,7 +5248,7 @@
         scoreBlock + '</div>' +
       (s.plan ? planAgendaHTML(s.plan) : "") +
       '<div class="ws-block"><div class="lbl"><span class="num">1</span>Warm-up recall</div>' + section(c.warmUp, "warmUp", false) + '</div>' +
-      '<div class="ws-block"><div class="lbl"><span class="num">2</span>Group problems</div>' + section(c.groupProblems, "groupProblems", true) + '</div>' +
+      '<div class="ws-block"><div class="lbl"><span class="num">2</span>' + (solo ? "Practice problems" : "Group problems") + '</div>' + section(c.groupProblems, "groupProblems", true) + '</div>' +
       '<div class="ws-block"><div class="lbl"><span class="num">3</span>Wrap-up check</div>' + section(c.wrapUpCheck, "wrapUpCheck", false) + '</div></div>';
   }
 
@@ -5502,18 +5762,39 @@
         var logEl = document.getElementById("chatLog");
         var t = document.createElement("div");
         t.className = "thinking";
-        t.innerHTML = 'Thinking<span class="dots"><span></span><span></span><span></span></span>';
+        t.innerHTML = 'Finding it in your notes<span class="dots"><span></span><span></span><span></span></span>';
         logEl.appendChild(t); toBottom();
+        // Point them to where the topic lives in their own materials first; the
+        // full AI answer stays hidden until they tap "Show the AI answer".
         try {
-          var ans = await answerQuestion(course, text);
-          course.chat.push({ role: "assistant", content: ans.content, citations: ans.citations });
+          var pointer = await locateInMaterials(course, text);
+          course.chat.push({ role: "assistant", id: uid(), question: text, pointer: pointer, content: "", citations: [] });
         } catch (e) {
-          course.chat.push({ role: "assistant", content: "⚠️ Couldn't reach Claude — " + e.message, citations: [] });
+          course.chat.push({ role: "assistant", id: uid(), question: text,
+            pointer: "⚠️ Couldn't look that up — " + e.message + "\n\nTap “Show the AI answer” to try a full answer instead.",
+            content: "", citations: [] });
+        }
+        persist(); renderPage(); toBottom();
+      };
+      // Stage 2: student asks for the actual AI answer — generate and reveal it.
+      var doReveal = async function (btn) {
+        var id = btn.getAttribute("data-chatshowai");
+        var m = course.chat.find(function (x) { return x.id === id; });
+        if (!m) return;
+        btn.disabled = true; btn.innerHTML = IC.spark + 'Generating…';
+        try {
+          var ans = await answerQuestion(course, m.question);
+          m.content = ans.content; m.citations = ans.citations || [];
+        } catch (e) {
+          m.content = "⚠️ Couldn't reach Claude — " + e.message; m.citations = [];
         }
         persist(); renderPage(); toBottom();
       };
       send.onclick = doSend;
       input.onkeydown = function (e) { if (e.key === "Enter") doSend(); };
+      Array.prototype.forEach.call(pageEl.querySelectorAll("[data-chatshowai]"), function (btn) {
+        btn.onclick = function () { doReveal(btn); };
+      });
       if (scroll) scroll.scrollTop = scroll.scrollHeight;
     }
 
