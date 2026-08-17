@@ -15,16 +15,17 @@
   2. THIS IS A SINGLE HTML FILE. All HTML, CSS, and JavaScript live
      in index.html and nowhere else. Edit ONLY this one file — no
      extra stylesheets, scripts, build steps, or config files.
-  3. BRANDING: the app is named "SIsta" (SI + sister). Keep it on
-     every iteration — never rename it back to "SI Companion" or
-     anything else. The wordmark must read "SIsta" in ALL of these:
+  3. BRANDING: this app is named "Sparky" — an electrician trade-school
+     exam-prep tool (study + practice tests), rebranded from "SIsta".
+     Keep it "Sparky" on every iteration — never rename it back to
+     "SIsta" or "SI Companion". The wordmark must read "Sparky" in ALL:
        - the browser tab: the HTML title element (angle-title...);
        - the side-rail logo: the .brand .name div;
        - the sign-in screen: the .auth-brand .name div AND the
-         "Choose how you're using SIsta" sub-line;
+         "Choose how you're using Sparky" sub-line;
        - the console build stamp and the sign-out confirm text.
-     The logo mark is the accent-colored star/spark tile (IC.spark)
-     next to the wordmark; keep the mark + "SIsta" together.
+     The logo mark is the accent-colored lightning-bolt tile (IC.spark)
+     next to the wordmark; keep the mark + "Sparky" together.
   4. STRUCTURED-JSON CALLS NEED A MAXTOKENS HEADROOM. Any callClaude
      that passes a `schema` and then JSON.parse()s the result will
      throw "Unterminated string in JSON at position N" if the model's
@@ -44,7 +45,7 @@
        Hard-reload (Cmd+Shift+R) after editing.
      - Each contact carries firstName + lastName (not just name),
        plus role, section (role detail: section taught / who a TA
-       covers / SI session times), email, office, hours, semesters.
+       covers / study session times), email, office, hours, semesters.
        If you add a field, thread it through the extract schema+prompt,
        normalizeContact, backfillContact, mergeContacts, the edit form,
        and the card render — or it silently drops on save/refresh.
@@ -64,7 +65,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SIsta</title>
+<title>Sparky — Electrician Exam Prep</title>
 <style>
   /* ===================== THEME TOKENS ===================== */
   :root {
@@ -134,6 +135,13 @@
   .nav-label { font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--rail-muted);
     font-weight:600; padding:18px 11px 8px; }
   .nav-label.rail-subhead { padding-top:20px; margin-top:6px; border-top:1px solid var(--rail-hover); }
+
+  .exam-pick { margin-top:12px; padding-top:10px; border-top:1px solid var(--rail-hover); }
+  .exam-pick .nav-label { display:block; padding:0 2px 6px; }
+  .exam-select { width:100%; padding:8px 10px; border-radius:9px; border:1px solid var(--rail-border);
+    background:var(--rail-hover); color:var(--rail-fg-strong); font-family:inherit; font-size:13px;
+    font-weight:500; cursor:pointer; }
+  .exam-select:hover { border-color:var(--rail-muted); }
 
   .course { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:9px;
     color:var(--rail-fg); font-size:13.5px; font-weight:500; cursor:pointer; }
@@ -456,7 +464,7 @@
   .ed-actions { display:flex; gap:10px; margin-top:22px; padding-top:16px; border-top:1px solid var(--border); flex-wrap:wrap; }
   .ws-score { font-size:12.5px; color:var(--text-muted); font-weight:600; margin-top:9px; }
 
-  /* ===== generate-mode toggle (worksheet vs. SI session plan) ===== */
+  /* ===== generate-mode toggle (worksheet vs. study session plan) ===== */
   .gen-mode { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:2px 0 20px; }
   .gen-mode-opt { display:flex; align-items:center; gap:11px; text-align:left; cursor:pointer;
     background:var(--surface-2); border:1.5px solid var(--border-strong); border-radius:13px; padding:13px 15px; color:var(--text); }
@@ -476,36 +484,8 @@
   .study-mode-banner { display:flex; gap:10px; align-items:flex-start; background:var(--accent-soft-bg); border:1px solid var(--accent);
     border-radius:11px; padding:12px 14px; margin:0 0 16px; font-size:13px; line-height:1.55; color:var(--text); }
   .study-mode-banner > .i { width:16px; height:16px; flex:0 0 auto; margin-top:2px; color:var(--accent-solid-fg); }
-  /* announcements */
-  .class-nudge { display:flex; gap:10px; align-items:flex-start; background:var(--accent-soft-bg); border:1px solid var(--accent);
-    border-radius:11px; padding:12px 14px; margin:0 0 18px; font-size:13px; line-height:1.55; color:var(--text); }
-  .class-nudge > .i { width:16px; height:16px; flex:0 0 auto; margin-top:2px; color:var(--accent-solid-fg); }
-  .ann-compose { background:var(--surface-2); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:20px; }
-  .ann-compose h3 { margin:0 0 10px; font-size:14.5px; font-weight:650; color:var(--text); }
-  .ann-compose textarea { min-height:80px; margin-bottom:12px; }
-  .ann-actions { display:flex; gap:9px; }
-  .ann-list { display:flex; flex-direction:column; gap:12px; }
-  .ann-card { border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:11px; padding:13px 15px; }
-  .ann-head { display:flex; align-items:center; gap:9px; margin-bottom:6px; }
-  .ann-who { font-size:13px; font-weight:650; color:var(--text); }
-  .ann-time { font-size:11.5px; color:var(--text-muted); }
-  .ann-del { margin-left:auto; background:none; border:none; cursor:pointer; color:var(--text-muted); padding:2px; border-radius:6px; }
-  .ann-del:hover { color:var(--danger, #c0392b); }
-  .ann-del .i { width:15px; height:15px; }
-  .ann-body { font-size:13.5px; line-height:1.6; color:var(--text); }
-  .empty .i.megaphone, .empty > .i { opacity:.7; }
-  /* attendance gate */
-  .session-gate { border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin:14px 0; background:var(--surface-2); }
-  .session-gate.on { border-color:var(--accent); }
-  .gate-toggle { display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:600; color:var(--text); cursor:pointer; }
-  .gate-toggle .i { width:15px; height:15px; color:var(--accent-solid-fg); }
-  .gate-toggle input { width:16px; height:16px; }
-  .session-gate .hint { font-size:12.5px; color:var(--text-muted); margin:8px 0 0; line-height:1.5; }
-  .gate-students { display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:12px; }
-  .gate-student { display:inline-flex; align-items:center; gap:7px; font-size:13px; color:var(--text); }
-  .gate-student input { width:15px; height:15px; }
 
-  /* ===== SI session plan (leader view + student agenda) ===== */
+  /* ===== study session plan (leader view + student agenda) ===== */
   .plan-view { margin-top:22px; background:var(--panel-bg); border:1px solid var(--border); border-radius:14px; padding:20px 24px 24px; }
   .plan-head .plan-title-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
   .plan-head h2 { font-size:19px; font-weight:700; margin:0; }
@@ -535,28 +515,6 @@
   .pa-badge.pa-time { background:var(--surface-2); }
   .pa-badge.pa-clt { border-color:var(--accent-soft-fg); color:var(--accent-soft-fg); }
   .pa-badge.pa-strat { border-color:#c86; color:#c86; }
-  .pa-badge.pa-opt { background:var(--surface-2); font-style:italic; }
-  .pa-problems { margin-top:12px; }
-  .pa-problems .pa-lbl { display:flex; align-items:center; gap:5px; margin-bottom:6px; color:var(--accent-solid-fg); }
-  .pa-problems .pa-lbl .i { width:12px; height:12px; }
-  .pa-problems ol { margin:0; padding-left:20px; }
-  .pa-problems li { margin:0 0 9px; font-size:13px; line-height:1.5; }
-  .pa-prob-q { color:var(--text); }
-  .pa-prob-a { margin-top:3px; background:var(--surface-2); border-radius:8px; padding:7px 10px; color:var(--text); white-space:pre-wrap; }
-  .pa-prob-actions { margin-top:11px; }
-  .plan-tools { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:2px 0 16px; }
-  .plan-tools .pa-lbl { margin-right:2px; }
-  .plan-tool { display:inline-flex; align-items:center; font-size:12.5px; font-weight:600; color:var(--accent-solid-fg);
-    background:var(--accent-soft-bg); border:1px solid var(--accent); border-radius:20px; padding:4px 12px; }
-  .plan-tools-empty .hint { font-size:12.5px; color:var(--text-muted); }
-  .plan-extra { margin:20px 0; padding-top:16px; border-top:1px solid var(--border); }
-  .plan-extra > .pa-lbl { display:block; margin-bottom:3px; }
-  .plan-extra .hint { font-size:12.5px; color:var(--text-muted); margin:0 0 12px; }
-  .pa-card.pa-extra { border-left-color:var(--accent-soft-fg); }
-  .pa-extra .pa-head { display:flex; align-items:center; justify-content:space-between; }
-  .ped-tools { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
-  .ped-tool-lbl { display:block; font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:4px; }
-  @media (max-width:560px){ .ped-tools { grid-template-columns:1fr; } }
   .pa-field { margin:7px 0; font-size:13px; line-height:1.55; }
   .pa-lbl { font-size:10px; letter-spacing:.05em; text-transform:uppercase; font-weight:700; color:var(--text-muted); margin-right:7px; }
   .pa-field .pa-lbl { display:block; margin-bottom:2px; }
@@ -944,6 +902,62 @@
     .ctx-actions { margin-left:0; width:100%; }
     .infobar, .ctx, .crumb, .tabs, .content, .page-scroll { padding-left:20px; padding-right:20px; }
   }
+
+  /* ===================== PRACTICE TEST ===================== */
+  .pt-setup { background:var(--panel-bg); border:1px solid var(--border); border-radius:var(--radius); padding:18px; }
+  .pt-setup-row { display:flex; flex-wrap:wrap; align-items:flex-end; gap:14px; }
+  .pt-setup .field-label { display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:var(--text-muted); font-weight:600; }
+  .pt-setup select { font-family:inherit; font-size:14px; padding:9px 10px; border:1px solid var(--border-strong);
+    border-radius:8px; background:var(--field-bg); color:var(--text); min-width:180px; }
+  .pt-stats { display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; }
+  .pt-stat { flex:1; min-width:96px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:12px 14px; text-align:center; }
+  .pt-stat-n { font-size:22px; font-weight:700; color:var(--accent-solid-fg); }
+  .pt-stat-l { font-size:12px; color:var(--text-muted); margin-top:2px; }
+
+  .pt-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
+  .pt-title { font-size:18px; font-weight:700; margin:0; }
+  .pt-meta { font-size:13px; color:var(--text-muted); margin-top:2px; }
+  .pt-q { background:var(--panel-bg); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; margin-bottom:14px; }
+  .pt-q-num { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+  .pt-q-text { font-size:15px; font-weight:600; line-height:1.5; margin-bottom:12px; color:var(--text); }
+  .pt-opts { display:flex; flex-direction:column; gap:8px; }
+  .pt-opt { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border-strong);
+    border-radius:8px; cursor:pointer; background:var(--field-bg); transition:border-color .12s, background .12s; }
+  .pt-opt:hover { border-color:var(--accent); }
+  .pt-opt input { margin:0; accent-color:var(--accent); }
+  .pt-opt.chosen { border-color:var(--accent); background:var(--accent-soft-bg); }
+  .pt-letter { flex:none; width:22px; height:22px; border-radius:50%; background:var(--surface-2); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--text-muted); }
+  .pt-opt.chosen .pt-letter { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); }
+  .pt-opt-text { flex:1; font-size:14px; color:var(--text); }
+  .pt-actions { margin-top:8px; }
+
+  /* results */
+  .pt-score { border-radius:var(--radius); padding:20px; text-align:center; margin-bottom:18px; border:1px solid var(--border); }
+  .pt-score.pass { background:var(--ready-bg); border-color:var(--ready-fg); }
+  .pt-score.fail { background:var(--bad-bg); border-color:var(--bad-fg); }
+  .pt-score-num { font-size:40px; font-weight:800; line-height:1; }
+  .pt-score.pass .pt-score-num { color:var(--ready-fg); }
+  .pt-score.fail .pt-score-num { color:var(--bad-fg); }
+  .pt-score-sub { font-size:13.5px; color:var(--text-muted); margin-top:8px; }
+  .pt-q.is-right { border-left:3px solid var(--ready-fg); }
+  .pt-q.is-wrong { border-left:3px solid var(--bad-fg); }
+  .pt-tag { font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; text-transform:none; letter-spacing:0; }
+  .pt-tag.ok { background:var(--ready-bg); color:var(--ready-fg); }
+  .pt-tag.no { background:var(--bad-bg); color:var(--bad-fg); }
+  .pt-tag.skip { background:var(--surface-2); color:var(--text-muted); }
+  .pt-opt.result { cursor:default; }
+  .pt-opt.result:hover { border-color:var(--border-strong); }
+  .pt-opt.result.correct { border-color:var(--ready-fg); background:var(--ready-bg); }
+  .pt-opt.result.correct .pt-letter { background:var(--ready-fg); color:#fff; border-color:var(--ready-fg); }
+  .pt-opt.result.wrong { border-color:var(--bad-fg); background:var(--bad-bg); }
+  .pt-opt.result.wrong .pt-letter { background:var(--bad-fg); color:#fff; border-color:var(--bad-fg); }
+  .pt-mark { flex:none; font-weight:800; font-size:15px; }
+  .pt-opt.result.correct .pt-mark { color:var(--ready-fg); }
+  .pt-opt.result.wrong .pt-mark { color:var(--bad-fg); }
+  .pt-explain { margin-top:12px; padding-top:12px; border-top:1px dashed var(--border); font-size:13.5px; line-height:1.55; color:var(--text-muted); }
+  .pt-explain strong { color:var(--text); }
+  .pt-topic { display:inline-block; margin-left:6px; font-size:11px; font-weight:600; padding:1px 7px; border-radius:999px; background:var(--surface-2); color:var(--text-muted); }
 </style>
 </head>
 <body>
@@ -954,8 +968,8 @@
     <!-- ================= SIDE NAV ================= -->
     <aside class="rail">
       <div class="brand">
-        <div class="mark"><svg class="i i-fill" viewBox="0 0 24 24"><path d="M12 2l2 6 6 2-6 2-2 6-2-6-6-2 6-2 2-6z"/></svg></div>
-        <div class="name">SIsta</div>
+        <div class="mark"><svg class="i i-fill" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg></div>
+        <div class="name">Sparky</div>
       </div>
       <div class="rail-scroll">
         <nav class="nav-group" id="primaryNav"></nav>
@@ -988,8 +1002,8 @@
 
   // Build stamp — bump when shipping changes. If the console doesn't show this
   // exact line on load, the browser is running an OLD cached/other copy.
-  var BUILD = "2026-07-14 SIsta (leader/student roles, classrooms, rebrand)";
-  console.log("%c[SIsta] build " + BUILD, "color:#D85A30;font-weight:bold");
+  var BUILD = "2026-08-16 Sparky (electrician exam prep — study + practice tests)";
+  console.log("%c[Sparky] build " + BUILD, "color:#D85A30;font-weight:bold");
 
   // ============================================================
   // CLAUDE CONFIG  —  the API key is NEVER stored in this file.
@@ -1192,10 +1206,10 @@
     return local;
   }
 
-  var KEY = "si-companion-demo/v1";
-  var TKEY = "si-companion-theme";
-  var IBKEY = "si-companion-infobar";
-  var SKEY = "si-companion-session/v1";
+  var KEY = "sparky-demo/v1";
+  var TKEY = "sparky-theme";
+  var IBKEY = "sparky-infobar";
+  var SKEY = "sparky-session/v1";
   var STOPWORDS = new Set(("the a an and or but of to in on at for with without is are was were be been being " +
     "this that these those it its as by from into about over under how what why when where which who whom whose " +
     "do does did can could should would will shall may might must not no yes if then than so such your you i we they " +
@@ -1208,7 +1222,7 @@
     trash:'<svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg>',
     x:'<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     plus:'<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
-    spark:'<svg class="i i-fill" viewBox="0 0 24 24"><path d="M12 2l2 6 6 2-6 2-2 6-2-6-6-2 6-2 2-6z"/></svg>',
+    spark:'<svg class="i i-fill" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>',
     send:'<svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
     upload:'<svg class="i" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>',
     moon:'<svg class="i" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>',
@@ -1234,9 +1248,7 @@
     wand:'<svg class="i" viewBox="0 0 24 24"><path d="M15 4V2M15 10V8M11 6H9M21 6h-2M18 9l-1.5-1.5M18 3l-1.5 1.5M3 21l12-12"/></svg>',
     grid:'<svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
     check:'<svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>',
-    help:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.6 2.2-2.6 4M12 17.5v.01"/></svg>',
-    megaphone:'<svg class="i" viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 0 0 1 1h2l9 5V5L6 10H4a1 1 0 0 0-1 1z"/><path d="M18 8a4 4 0 0 1 0 8"/></svg>',
-    lock:'<svg class="i" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
+    help:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.6 2.2-2.6 4M12 17.5v.01"/></svg>'
   };
 
   // ---------- theme ----------
@@ -1273,7 +1285,7 @@
     else localStorage.removeItem(SKEY);
   }
   function signIn(role, name) {
-    var clean = String(name || "").trim() || (role === "leader" ? "SI Leader" : "Student");
+    var clean = String(name || "").trim() || (role === "leader" ? "Instructor" : "Student");
     // A stable id derived from role + name so signing back in as the same
     // person restores their classrooms, membership, and self-grades (there's
     // no server — this is how identity survives a sign-out in one browser).
@@ -1307,12 +1319,17 @@
     // Per-student overlay for a joined classroom: their private materials,
     // sessions, contacts, study plan, and tutor progress. Keyed cl.id:userId.
     if (!s.enrolled) s.enrolled = {};
+    // Which electrician exam the student is studying for (global). Drives every
+    // AI prompt via examDomain() and the practice-test generator. Legacy states
+    // predate it; default to the journeyman licensing exam.
+    // (EXAMS isn't assigned yet at first load; currentExam() validates the key.)
+    if (!s.exam) s.exam = "journeyman";
     return s;
   }
   function normalizeClassroom(c) {
     if (!c.materials) c.materials = [];
     if (!c.sessions) c.sessions = [];
-    // In-person SI session plans (Purdue Session Planning Form). Distinct from
+    // In-person study session plans (Purdue Session Planning Form). Distinct from
     // `sessions`, which are the practice worksheets students self-study. A plan
     // can later be posted as a virtual session, which generates a worksheet.
     if (!c.plans) c.plans = [];
@@ -1320,15 +1337,6 @@
     if (!c.members) c.members = [];
     if (!c.chat) c.chat = [];
     if (!c.questions) c.questions = [];
-    // Leader announcements (class reminders, attendance notes) students can read.
-    if (!c.announcements) c.announcements = [];
-    // Attendance-gated sessions: a leader can lock a published session so only
-    // students they mark as having attended class can open it. Backfill older
-    // sessions as open (gated:false) so nothing that was visible disappears.
-    (c.sessions || []).forEach(function (s) {
-      if (s.gated === undefined) s.gated = false;
-      if (!s.allowedStudents) s.allowedStudents = [];
-    });
     // A question's status drives who's on the hook. Older saved questions had
     // no status: treat an answered one as "answered", anything else as
     // "pending" (awaiting the leader), matching the old always-notify behavior.
@@ -1380,38 +1388,35 @@
   function seed() {
     return {
       courses: [{
-        id: uid(), name: "CHEM 116 (sample)", color: COLORS[0],
+        id: uid(), name: "Electrical Fundamentals (sample)", color: COLORS[0],
         materials: [{
-          id: uid(), filename: "equilibrium-notes.txt",
-          text: "Chemical equilibrium is the state in which the forward and reverse reaction rates are equal, " +
-                "so concentrations of reactants and products stay constant over time. The equilibrium constant K " +
-                "relates product and reactant concentrations at equilibrium. A large K means products are favored; " +
-                "a small K means reactants are favored.\n\n" +
-                "Le Chatelier's principle states that if a system at equilibrium is disturbed by a change in " +
-                "concentration, temperature, or pressure, the system shifts to counteract the disturbance and " +
-                "restore equilibrium. Adding reactant shifts the equilibrium toward products. Increasing temperature " +
-                "for an endothermic reaction shifts it toward products. Increasing pressure shifts equilibrium toward " +
-                "the side with fewer moles of gas.\n\n" +
-                "The reaction quotient Q has the same form as K but uses current concentrations. If Q < K the reaction " +
-                "proceeds forward; if Q > K it proceeds in reverse; if Q equals K the system is at equilibrium.",
+          id: uid(), filename: "ohms-law-notes.txt",
+          text: "Ohm's law states that voltage equals current times resistance: V = I × R. Power is P = V × I, " +
+                "which can also be written P = I² × R or P = V² / R. These relationships (often shown as the Ohm's law " +
+                "and power 'wheel') let you solve for any one value when two others are known.\n\n" +
+                "In a SERIES circuit the current is the same through every component, resistances add (R_total = R1 + R2 + …), " +
+                "and the source voltage divides across the loads. If any part of a series path opens, the whole circuit stops. " +
+                "In a PARALLEL circuit the voltage is the same across every branch, the branch currents add up to the total, " +
+                "and the total resistance is less than the smallest branch (1/R_total = 1/R1 + 1/R2 + …).\n\n" +
+                "Conductors (copper, aluminum) carry current easily; insulators (rubber, PVC, thermoplastic) resist it and " +
+                "protect against shock. A conductor's ampacity — how much current it can safely carry — depends on its size " +
+                "(AWG), insulation type/temperature rating, and how it is installed. The National Electrical Code (NEC) " +
+                "gives ampacity in tables such as 310.16 and requires overcurrent protection sized to protect the conductor.",
           createdAt: Date.now()
         }],
         chat: [], sessions: [],
         contacts: [
-          { id: uid(), name: "Dr. Ada Ramirez", firstName: "Ada", lastName: "Ramirez", role: "Professor",
-            email: "aramirez@example.edu", phone: "", office: "WTHR 320", hours: "Tue/Thu 2–3pm",
-            semesters: "Fall & Spring", notes: "Best reached by email.", source: "ai", sourceDetail: "syllabus" },
-          { id: uid(), name: "Ben Cho", firstName: "Ben", lastName: "Cho", role: "Teaching Assistant",
-            email: "cho42@example.edu", phone: "", office: "BRWN 2100 (lab)", hours: "Wed 1–3pm",
-            semesters: "Fall", notes: "Handles the lab sections.", source: "ai", sourceDetail: "syllabus" },
-          { id: uid(), name: "Gillian B.", firstName: "Gillian", lastName: "B.", role: "SI Leader",
-            email: "si-chem116@example.edu", phone: "", office: "Library learning commons", hours: "Mon 4–5pm",
-            semesters: "", notes: "", source: "ai", sourceDetail: "syllabus" }
+          { id: uid(), name: "Marcus Reed", firstName: "Marcus", lastName: "Reed", role: "Instructor",
+            email: "mreed@example.edu", phone: "", office: "Trades Bldg 120", hours: "Tue/Thu 2–3pm",
+            semesters: "Fall & Spring", notes: "Journeyman electrician, 15 yrs field experience.", source: "ai", sourceDetail: "syllabus" },
+          { id: uid(), name: "Dana Willis", firstName: "Dana", lastName: "Willis", role: "Lab Instructor",
+            email: "dwillis@example.edu", phone: "", office: "Wiring Lab", hours: "Wed 1–3pm",
+            semesters: "Fall", notes: "Runs the hands-on wiring lab.", source: "ai", sourceDetail: "syllabus" }
         ],
         topics: [
-          { id: uid(), name: "Chemical equilibrium", source: "ai" },
-          { id: uid(), name: "Le Chatelier's principle", source: "ai" },
-          { id: uid(), name: "Reaction quotient Q", source: "ai" }
+          { id: uid(), name: "Ohm's law & power", source: "ai" },
+          { id: uid(), name: "Series vs. parallel circuits", source: "ai" },
+          { id: uid(), name: "Conductor ampacity (NEC 310.16)", source: "ai" }
         ],
         questions: [], attempts: [], progress: {}
       }]
@@ -1447,7 +1452,7 @@
   function clChat(c) { var k = clChatKey(c); if (!state.classroomChats[k]) state.classroomChats[k] = []; return state.classroomChats[k]; }
   function clGradeKey(c, s) { return c.id + ":" + s.id + ":" + (session && session.id); }
   function clGrades(c, s) { var k = clGradeKey(c, s); if (!state.classroomGrades[k]) state.classroomGrades[k] = {}; return state.classroomGrades[k]; }
-  // Questions students ask their SI leader. These live ON the shared classroom
+  // Questions students ask their instructor. These live ON the shared classroom
   // (unlike the personal AI chat) so the leader and every student see the same
   // thread. Each may carry a quick AI answer from the materials and/or the
   // leader's own reply.
@@ -1513,6 +1518,54 @@
     }).filter(function (r) { return r.score > 0; })
       .sort(function (a, b) { return b.score - a.score; }).slice(0, limit || 3);
   }
+  // ---- Sparky exam domain ----
+  // Every AI call is grounded in electrician trade-school exam prep. Sparky
+  // supports several different electrician exams; the student picks which one
+  // they're studying for (a global setting, state.exam), and that choice is
+  // threaded into every AI prompt and the practice-test generator through
+  // examDomain(). Each exam entry carries: a label (UI), scope (the teaching
+  // focus injected into system prompts), testFocus (the emphasis line for the
+  // practice-exam generator), and bank (which PT_BANK levels to draw from when
+  // offline). To add an exam, add an entry here and to EXAM_ORDER — nothing
+  // else needs to change.
+  var EXAM_BASE = "You are Sparky, a study coach that prepares people for electrician trade-school and licensing exams. " +
+    "Your subject is electrical work. ";
+  var EXAM_TAIL = "Rest this on a solid foundation of electrical fundamentals (circuits, Ohm's law and power, safety) as needed. " +
+    "Use correct NEC terminology. When you cite a Code rule keep it educational, and note that the specific NEC edition adopted in the student's jurisdiction governs on the real exam. ";
+
+  var EXAMS = {
+    apprentice: {
+      label: "Apprentice / Fundamentals",
+      scope: "The student is preparing for an APPRENTICE / electrical-fundamentals exam. Base your teaching on general/apprentice fundamentals — circuits, Ohm's law and power, series vs. parallel, AC vs. DC, conductors and insulators, wiring methods, hand and power tools, blueprint reading, and electrical safety (lockout/tagout, PPE, shock and arc-flash hazards). Introduce NEC terminology gently but keep the focus on fundamentals. ",
+      testFocus: "Target APPRENTICE / general-fundamentals level: circuits, Ohm's law and power, series vs. parallel, AC vs. DC, conductors and insulators, basic wiring methods, tools, and electrical safety.",
+      bank: ["fundamentals"]
+    },
+    journeyman: {
+      label: "Journeyman (NEC)",
+      scope: "The student is preparing for the JOURNEYMAN electrician exam. Base your teaching on journeyman-level material from the National Electrical Code (NEC / NFPA 70): conductor and wire sizing (ampacity), overcurrent protection, conduit fill, box fill, grounding and bonding, and branch-circuit and service load calculations. ",
+      testFocus: "Target JOURNEYMAN level: emphasize National Electrical Code (NEC) rules and calculations — conductor sizing and ampacity, overcurrent protection, conduit and box fill, grounding and bonding, and branch-circuit / service load calculations.",
+      bank: ["journeyman"]
+    },
+    master: {
+      label: "Master Electrician",
+      scope: "The student is preparing for the MASTER ELECTRICIAN exam. Assume they already know journeyman material and go deeper: advanced NEC application, service and feeder design, standard vs. optional load calculations, motor and transformer calculations, voltage drop, short-circuit and overcurrent coordination, and code administration (permitting and inspection). ",
+      testFocus: "Target MASTER ELECTRICIAN level: advanced NEC application, service/feeder sizing, standard vs. optional load calculations, motor and transformer calcs, voltage drop, and code administration.",
+      bank: ["journeyman"]
+    },
+    residential: {
+      label: "Residential Wireman",
+      scope: "The student is preparing for the RESIDENTIAL WIREMAN exam. Focus on one- and two-family dwelling work: branch circuits and required small-appliance/laundry circuits, receptacle and lighting-outlet spacing, GFCI and AFCI protection, dwelling service and panel sizing, residential grounding and bonding, and the NEC articles that most affect residential work (210, 220, 250, 406). ",
+      testFocus: "Target RESIDENTIAL WIREMAN level: dwelling branch circuits, required outlets and spacing, GFCI/AFCI protection, dwelling service and load calculations (NEC 220), and residential grounding and bonding.",
+      bank: ["fundamentals", "journeyman"]
+    }
+  };
+  var EXAM_ORDER = ["apprentice", "journeyman", "master", "residential"];
+
+  function currentExam() { return EXAMS[state.exam] || EXAMS.journeyman; }
+  // The system-prompt preamble for the exam the student is currently studying
+  // for. Callers prepend this to their task-specific instructions.
+  function examDomain() { return EXAM_BASE + currentExam().scope + EXAM_TAIL; }
+
   async function answerQuestion(course, question) {
     if (course.materials.length === 0)
       return { content: "No materials have been uploaded for this course yet. Add some material first — I only answer from what's uploaded.", citations: [] };
@@ -1531,8 +1584,8 @@
     // supplement with the web so the answer isn't limited to what's uploaded.
     var context = course.materials.map(function (m) { return "### " + m.filename + "\n" + m.text; }).join("\n\n");
     var tools = [{ type: "web_search_20250305", name: "web_search", max_uses: 4 }];
-    var system = "You are an SI (Supplemental Instruction) study companion. Answer the student's question in two connected ways. " +
-      "First, ground your answer in the COURSE MATERIALS and point the student to where they can find it — name the specific material (filename) and, when you can, the relevant section, page, or topic. " +
+    var system = examDomain() + "Answer the student's question in two connected ways. " +
+      "First, ground your answer in the STUDY MATERIALS and point the student to where they can find it — name the specific material (filename) and, when you can, the relevant section, page, or topic. " +
       "Then go further: use web search to bring in accurate, up-to-date information from the internet that explains the concept more fully, adds worked examples, or covers what the materials leave out. Prefer reputable, authoritative sources and briefly note where the outside information comes from. " +
       "If the materials don't cover the question at all, say so plainly, then answer it from reliable web sources. Be concise, clear, and encouraging.";
     var user = "COURSE MATERIALS:\n" + context + "\n\nSTUDENT QUESTION: " + question;
@@ -1540,24 +1593,24 @@
     return { content: content, citations: citations };
   }
   // A short "go look here first" pointer — instead of handing over the answer,
-  // it tells the student WHERE in their own notes/materials/syllabus the topic
-  // lives (which file, which lecture, which week). Encourages using their notes
-  // before the AI answer, which stays hidden until they ask for it.
+  // it tells the student WHERE in their own notes/materials the topic lives
+  // (which file, which section). Encourages using their notes before the AI
+  // answer, which stays hidden until they ask for it.
   async function locateInMaterials(course, question) {
     if (!course.materials || course.materials.length === 0)
-      return "No materials are uploaded yet, so there's nothing to point you to. Ask your SI leader, or upload your notes and syllabus first.";
+      return "No materials are uploaded yet, so there's nothing to point you to. Ask your instructor, or upload your notes and study guide first.";
     var ranked = rank(allChunks(course), question, 3);
     var files = [];
     ranked.forEach(function (r) { if (files.indexOf(r.chunk.filename) === -1) files.push(r.chunk.filename); });
     // Offline / keyword fallback: name the best-matching files.
     if (!claudeReady()) {
-      if (!files.length) return "Try scanning your uploaded notes and the syllabus schedule for this topic — check the lecture or week where it was covered.";
+      if (!files.length) return "Try scanning your uploaded notes and study guide for this topic — check the section where it was covered.";
       return "Look here first: " + files.join(", ") + ". Skim the section on this topic in your notes before reaching for the AI answer.";
     }
     var context = course.materials.map(function (m) { return "### " + m.filename + "\n" + m.text; }).join("\n\n");
-    var system = "You are an SI (Supplemental Instruction) study companion helping a student learn to use THEIR OWN notes. " +
-      "Do NOT answer the question. Instead, in 1–2 short sentences, point the student to WHERE in their uploaded materials they can find the answer: name the specific file(s), and when the materials say so, the relevant lecture, chapter, section, or the syllabus week/date the topic is covered. " +
-      "Be concrete and encouraging (e.g. \"Check lecture-3.txt — your syllabus lists this under Week 5.\"). If the materials genuinely don't cover it, say so briefly and suggest asking the SI leader. Never give the actual answer here.";
+    var system = examDomain() + "You are helping the student learn to use THEIR OWN notes. " +
+      "Do NOT answer the question. Instead, in 1–2 short sentences, point the student to WHERE in their uploaded materials they can find the answer: name the specific file(s), and when the materials say so, the relevant section, chapter, or topic (e.g. a specific NEC article or study-guide unit). " +
+      "Be concrete and encouraging. If the materials genuinely don't cover it, say so briefly and suggest looking it up. Never give the actual answer here.";
     var user = "COURSE MATERIALS:\n" + context + "\n\nSTUDENT QUESTION: " + question + "\n\nPoint them to where in their materials to look. Do not answer the question.";
     return (await callClaude({ system: system, user: user, maxTokens: 512 })).trim();
   }
@@ -1583,7 +1636,7 @@
     };
     var hasMaterials = course.materials.length > 0;
     var filenames = course.materials.map(function (m) { return m.filename; });
-    var system = "You design Purdue-style Supplemental Instruction practice sessions: a warm-up recall section, collaborative group problems (each with a facilitation hint), and a wrap-up check. Aim for 3 warm-up questions, 2-3 group problems, and 3 wrap-up checks. " +
+    var system = examDomain() + "Design an electrician study session: a warm-up recall section, hands-on practice problems (each with a coaching hint), and a wrap-up check. Aim for 3 warm-up questions, 2-3 practice problems, and 3 wrap-up checks. " +
       "For every item, also provide an 'answer': a concise but complete model answer the student can grade themselves against — show the key reasoning or the expected response, not just a yes/no. " +
       "Write every question so it stands on its own: a student should be able to read and answer it without being told where it came from. Do NOT open questions with phrases like \"According to the course schedule,\", \"Based on the syllabus,\", or \"From the course materials\" — state the substance of the question directly. " +
       (hasMaterials
@@ -1607,7 +1660,7 @@
     var context = course.materials.map(function (m) { return "### " + m.filename + "\n" + m.text; }).join("\n\n");
     var schema = { type: "object", properties: { answer: { type: "string" } },
       required: ["answer"], additionalProperties: false };
-    var system = "You are a Supplemental Instruction study coach. Give a concise but complete model answer to the practice question — show the key reasoning or the expected response, not just a yes/no. " +
+    var system = examDomain() + "Give a concise but complete model answer to the practice question — show the key reasoning, formula, or Code basis, not just a yes/no. " +
       (hasMaterials ? "Ground the answer in the provided course materials." : "Use your own knowledge of the subject.");
     var user = (hasMaterials ? "COURSE MATERIALS:\n" + context + "\n\n" : "COURSE: " + (course.name || "a college course") + "\n\n") +
       "QUESTION:\n" + question + "\n\nProvide the model answer.";
@@ -1623,11 +1676,11 @@
     var materials = course.materials.map(function (m) { return "### " + m.filename + "\n" + m.text; }).join("\n\n");
     var schema = { type: "object", properties: { topics: { type: "array", items: { type: "string" } } },
       required: ["topics"], additionalProperties: false };
-    var system = "You suggest study topics a student could run a Supplemental Instruction practice session on. " +
+    var system = examDomain() + "Suggest study topics the student could run a practice session on for this electrical exam area. " +
       "Return 6 short topic names (2-5 words each), specific and practiceable, no numbering, no duplicates. " +
-      "Base them on the course materials when provided, and use web search to ground them in the course's real syllabus/topics; " +
-      "otherwise use the course name and your knowledge of what that course typically covers. " +
-      "Name real subject matter, never logistics words like the school, \"students\", \"homework\", or \"section\".";
+      "Base them on the study materials when provided, and use web search to ground them in real electrician exam / NEC content; " +
+      "otherwise use the study area's name and your knowledge of what an electrician exam covers there. " +
+      "Name real electrical subject matter (e.g. \"Conduit fill\", \"Ohm's law\", \"Grounding vs. bonding\"), never logistics words.";
     var user = "COURSE: " + (course.name || "a college course") +
       (known.length ? "\nTOPICS ALREADY ADDED (avoid repeating): " + known.join(", ") : "") +
       (materials ? "\n\nCOURSE MATERIALS:\n" + materials : "");
@@ -1681,8 +1734,8 @@
   }
   function shorten(s) { s = s.replace(/\s+/g, " ").trim(); return s.length > 140 ? s.slice(0, 137) + "…" : s; }
 
-  // ---------- SI session plan (Purdue Session Planning Form) ----------
-  // The vocabulary of the Purdue SI model, taken from the SI Leader Tool Kit.
+  // ---------- study session plan (Purdue Session Planning Form) ----------
+  // The vocabulary of the Purdue SI model, taken from the Instructor Tool Kit.
   // Used both to steer Claude toward real, named SI techniques and to power the
   // offline fallback and the plan editor's dropdowns. Keeping these as data (not
   // just prose in a prompt) means a leader always picks from the sanctioned set.
@@ -1758,72 +1811,104 @@
       "\n\nFACILITATION STRATEGIES the leader threads throughout: " + SI_FACILITATION + ".";
   }
 
-  // Leaders AUTHOR their own SI session plans (AI never generates the plan). This
-  // seeds an empty Purdue Session Planning Form with the fixed activity skeleton —
-  // Opener, Main, an optional second Main, and Closer — for the leader to fill in
-  // and pick their two tools. AI is only used later to make practice problems.
-  function newBlankPlan(topic) {
+  // Generate a full in-person study session plan on the Purdue Session Planning
+  // Form. Every activity names a real CLT and Learning Strategy from the Tool
+  // Kit; the mix is meant to vary each time so a leader gets a fresh, creative
+  // plan for every session. Grounded in the classroom's uploaded materials.
+  async function generateSessionPlan(cl, topic) {
     var t = (topic || "").trim();
-    function act(title, role, duration, optional) {
-      return { title: title, role: role, optional: !!optional, objective: "", clt: "", strategy: "",
-        duration: duration, references: "", cfu: "", breakdown: "", problems: null };
-    }
-    return { id: uid(), topic: t || "SI Session", createdAt: Date.now(),
-      weekNo: "", sessionNo: "", sessionTime: "", posted: false, postedSessionId: null,
-      content: {
-        objectives: "",
-        // The two SI tools (Collaborative Learning Technique + Learning Strategy)
-        // the leader plans to lean on across the whole session.
-        tools: { tool1: "", tool2: "" },
-        activities: [
-          act("Opening Activity", "opening", "8 min", false),
-          act("Main Activity", "main", "18 min", false),
-          act("Main Activity 2 (Optional)", "main", "12 min", true),
-          act("Closing Activity", "closing", "8 min", false)
-        ],
-        materialsNeeded: [],
-        leaderReminder: "",
-        // Practice problems for extra, leader-entered activities (topic → problems).
-        extraProblems: []
-      } };
-  }
-
-  // AI makes PRACTICE PROBLEMS for one activity (or a free-text extra activity).
-  // This is the only AI in the leader plan builder — it never writes the plan.
-  async function generateActivityProblems(cl, topic, objective) {
-    var t = (topic || "").trim() || "the session topic";
-    if (!claudeReady()) return localActivityProblems(t);
+    if (!claudeReady()) return localGenerateSessionPlan(cl, t);
     var hasMaterials = cl.materials.length > 0;
     var context = cl.materials.map(function (m) { return "### " + m.filename + "\n" + m.text; }).join("\n\n");
+    var filenames = cl.materials.map(function (m) { return m.filename; });
+    var activity = {
+      type: "object",
+      properties: {
+        title: { type: "string" },
+        role: { type: "string", enum: ["opening", "main", "closing"] },
+        objective: { type: "string" },
+        clt: { type: "string" },
+        strategy: { type: "string" },
+        duration: { type: "string" },
+        references: { type: "string" },
+        cfu: { type: "string" },
+        breakdown: { type: "string" }
+      },
+      required: ["title", "role", "objective", "clt", "strategy", "duration", "references", "cfu", "breakdown"],
+      additionalProperties: false
+    };
     var schema = {
       type: "object",
       properties: {
-        problems: { type: "array", items: {
-          type: "object",
-          properties: { q: { type: "string" }, answer: { type: "string" } },
-          required: ["q", "answer"], additionalProperties: false
-        } }
+        objectives: { type: "string" },
+        activities: { type: "array", items: activity },
+        materialsNeeded: { type: "array", items: { type: "string" } },
+        leaderReminder: { type: "string" }
       },
-      required: ["problems"], additionalProperties: false
+      required: ["objectives", "activities", "materialsNeeded", "leaderReminder"],
+      additionalProperties: false
     };
-    var system = "You are an experienced Purdue Supplemental Instruction (SI) Leader creating PRACTICE PROBLEMS for one activity within a session you have already planned yourself. " +
-      "Produce 3–5 concrete practice problems that students can work, each with a clear worked 'answer' (the key steps or the final result, not just a letter). Match the difficulty to a collaborative SI session — problems students discuss and solve together. " +
-      (hasMaterials ? "Ground the problems in the provided course materials where relevant." : "Use your knowledge of the subject to make the problems accurate and specific.");
-    var user = (hasMaterials ? "COURSE MATERIALS:\n" + context + "\n\n" : "COURSE: " + (cl.name || "a college course") + "\n\n") +
-      "ACTIVITY TOPIC: " + t + (objective ? "\nACTIVITY OBJECTIVE: " + objective : "") +
-      "\n\nWrite the practice problems now. Return only the schema fields.";
-    var raw = await callClaude({ system: system, user: user, schema: schema, maxTokens: 4096 });
-    var parsed = parseJsonLoose(raw);
-    return (parsed && parsed.problems) || localActivityProblems(t);
+    var system = "You are an experienced electrician trade-school instructor filling out a session planning form for an upcoming IN-PERSON, 50-minute class study session. " +
+      "This is a hands-on, collaborative study session — NOT a lecture. The instructor facilitates; students do the work, solve problems, and talk to each other. " +
+      "Build a plan with exactly these activities in order: one Opening Activity (5–10 min), one to three Main Activities (10–30 min each), and one Closing Activity (5–10 min). Set 'role' to \"opening\", \"main\", or \"closing\" accordingly, and 'title' to \"Opening Activity\", \"Main Activity 1/2/3\", or \"Closing Activity\". Keep the total near 50 minutes. " +
+      "For EACH activity fill every field: 'objective' (the objective and/or content, one or two sentences), 'clt' (choose ONE Collaborative Learning Technique by its exact name from the CLT list — it must be a CLT, never a Learning Strategy), 'strategy' (choose ONE Learning Strategy by its exact name from the Learning Strategies list — it must be a Learning Strategy, never a CLT), 'duration' (e.g. \"10 min\"), 'references' (which lecture/chapter/slides it draws on — infer from the materials, or \"\" if unknown), 'cfu' (a concrete open-ended Check for Understanding question or move), and 'breakdown' (a DETAILED step-by-step facilitation script: what the leader says/does, how students are grouped, and the actual problems or prompts to use — grounded in the content, not generic). The 'clt' and 'strategy' for a given activity must be two different techniques (never the same name in both fields). " +
+      "Choose techniques that genuinely fit each activity's purpose, and VARY them: do not reuse the same CLT or Strategy across activities, and favor a fresh mix so repeated plans on similar topics feel different each time. Openers suit quick recall/energizers; closers suit summary/self-check strategies. " +
+      "Thread the facilitation strategies (redirection, wait time, checks for understanding) into the breakdowns. " +
+      "'materialsNeeded' lists what the leader should prep (handouts, note cards, board setup, problems, etc.). 'leaderReminder' is a short note on what to remind students to study on their own afterward. 'objectives' is a one-sentence overall session objective. " +
+      "The class is an electrician trade-school / apprenticeship class: make every objective, problem, and reference about electrical work — fundamentals (circuits, Ohm's law, wiring, safety) and journeyman-level NEC topics (ampacity, conduit and box fill, grounding and bonding, load calculations). " +
+      (hasMaterials
+        ? "Ground the content, problems, and references in the provided study materials."
+        : "Use your own knowledge of electrical work and the NEC to make the content and problems accurate and specific.");
+    var user = siToolkitPrompt() + "\n\n" +
+      (hasMaterials ? "STUDY MATERIALS:\n" + context + "\n\nFILENAMES: " + filenames.join(", ") + "\n\n" : "CLASS: " + (cl.name || "an electrician class") + "\n\n") +
+      "SESSION FOCUS / TOPIC: " + (t || "the most difficult recent content") + "\n\n" +
+      "Design the study session plan now. Return only the schema fields.";
+    var raw = await callClaude({ system: system, user: user, schema: schema, maxTokens: 8192 });
+    var content = JSON.parse(raw);
+    return { id: uid(), topic: t || "Study Session", createdAt: Date.now(),
+      weekNo: "", sessionNo: "", sessionTime: "", posted: false, postedSessionId: null,
+      content: content };
   }
-  // Offline scaffold when there's no API key: prompts the leader can flesh out.
-  function localActivityProblems(topic) {
-    var t = topic || "the topic";
-    return [
-      { q: "Warm-up: state the key idea of " + t + " in your own words, then give one example.", answer: "Students' own wording; look for the core definition and a correct example." },
-      { q: "Work a standard problem on " + t + " step by step with your group.", answer: "Add your own worked solution here (no API key set, so problems weren't auto-written)." },
-      { q: "Find and fix a common mistake students make with " + t + ".", answer: "Name the misconception and the correction." }
+
+  // Offline fallback: assemble a plan from the toolkit vocabulary without an
+  // API key. Picks a rotating, varied set of CLTs/strategies so each generation
+  // still feels different, and scaffolds breakdowns the leader can flesh out.
+  function localGenerateSessionPlan(cl, topic) {
+    var t = (topic || "").trim() || "today's key content";
+    var allLS = strategyNames();
+    var r = Math.floor(Math.random() * 1000);
+    function ls(n) { return allLS[(r + n) % allLS.length]; }
+    function clt(n) { return SI_CLTS[(r + n) % SI_CLTS.length].name; }
+    var activities = [
+      { title: "Opening Activity", role: "opening",
+        objective: "Warm up and surface what students already recall about " + t + ".",
+        clt: clt(0), strategy: ls(0), duration: "8 min", references: "",
+        cfu: "Ask a student to summarize the main idea of " + t + " in their own words.",
+        breakdown: "Greet students and post the day's focus. Run a quick recall opener on " + t + " using the chosen strategy, keeping everyone talking. Use wait time — hold 15–20 seconds of silence before jumping in, and redirect questions back to the group." },
+      { title: "Main Activity 1", role: "main",
+        objective: "Work collaboratively through the core problems/concepts of " + t + ".",
+        clt: clt(2), strategy: ls(3), duration: "18 min", references: "",
+        cfu: "Have a group explain their reasoning at the board while others check it.",
+        breakdown: "Group students and give them a concrete problem or prompt on " + t + " (pull one from the uploaded materials). Circulate and redirect — ask 'what part do you understand?' rather than answering. Have groups compare approaches." },
+      { title: "Main Activity 2 (Optional)", role: "main",
+        objective: "Stretch to a harder application or common misconception around " + t + ".",
+        clt: clt(4), strategy: ls(6), duration: "12 min", references: "",
+        cfu: "Ask students to spot and fix an intentional error you put on the board.",
+        breakdown: "Introduce a trickier case or a worked example with a deliberate mistake. Let students debate it in the chosen structure, then resolve it as a group." },
+      { title: "Closing Activity", role: "closing",
+        objective: "Consolidate and check what students take away from " + t + ".",
+        clt: clt(6), strategy: ls(9), duration: "8 min", references: "",
+        cfu: "Each student names one thing they now understand and one they'll review.",
+        breakdown: "Run a closing summary using the chosen strategy (e.g. a timed brain dump). Collect or discuss responses to gauge confidence, and remind students what to study before the next class." }
     ];
+    return { id: uid(), topic: t, createdAt: Date.now(),
+      weekNo: "", sessionNo: "", sessionTime: "", posted: false, postedSessionId: null,
+      content: {
+        objectives: "By the end of the session, students can explain and apply the key ideas of " + t + " with their peers.",
+        activities: activities,
+        materialsNeeded: ["Whiteboard/markers", "Practice problems on " + t, "Blank paper or note cards"],
+        leaderReminder: "Remind students to rework today's problems on their own and bring questions to the next session."
+      } };
   }
 
   // ---------- study plan (from a syllabus + materials) ----------
@@ -1853,9 +1938,9 @@
     var focusSystem = focus.length
       ? " The student has told you the 2-3 topics they struggle with most: " + focus.join(", ") + ". Build the plan AROUND these — give them more units (or dedicate whole units to them), schedule them earlier and revisit them, and weight the study actions toward extra review and practice on exactly these topics. Still cover the rest of the course, but more briefly. In the summary, say plainly that the plan is focused on these struggle topics."
       : "";
-    var system = "You are an SI (Supplemental Instruction) study coach. Build a concrete study plan for the student's course, drawing on BOTH their uploaded materials — especially any syllabus, schedule, or list of exam dates — AND the web. Use web search to fill in the course's real topics when the materials are thin, but NEVER invent dates: dates and deadlines must come from the student's own materials. Break the term into ordered units (use the syllabus's own weeks/units and dates when present; otherwise group by topic). For each unit give: a label, a 'when' (a date range or week if the materials state one, else \"\"), the topics it covers, and 2-4 specific study actions (what to review, practice, or do to prepare). Add a few short overall study tips, calling out any exams or major deadlines you find. Ground the schedule in the materials; you may enrich the topic coverage from the web." + focusSystem;
-    var user = "COURSE: " + (course.name || "a college course") +
-      (context ? "\n\nCOURSE MATERIALS:\n" + context : "\n\n(No materials uploaded — look the course up online for its typical topics, but leave dates blank.)") +
+    var system = examDomain() + "Build a concrete study plan for this electrician exam area, drawing on BOTH their uploaded materials — especially any syllabus, schedule, or list of exam dates — AND the web. Use web search to fill in the course's real topics when the materials are thin, but NEVER invent dates: dates and deadlines must come from the student's own materials. Break the term into ordered units (use the syllabus's own weeks/units and dates when present; otherwise group by topic). For each unit give: a label, a 'when' (a date range or week if the materials state one, else \"\"), the topics it covers, and 2-4 specific study actions (what to review, practice, or do to prepare). Add a few short overall study tips, calling out any exams or major deadlines you find. Ground the schedule in the materials; you may enrich the topic coverage from the web." + focusSystem;
+    var user = "EXAM AREA: " + (course.name || "an electrician exam") +
+      (context ? "\n\nSTUDY MATERIALS:\n" + context : "\n\n(No materials uploaded — use typical electrician-exam / NEC topics for this area, but leave dates blank.)") +
       (focus.length ? "\n\nTOPICS THE STUDENT STRUGGLES WITH MOST (focus the plan on these): " + focus.join(", ") : "") +
       "\n\nBuild a study plan for this course" + (focus.length ? ", focusing extra time and practice on the struggle topics." : ".");
     var raw = await callClaude({ system: system, user: user, schema: schema, tools: webSearchTools(3), maxTokens: 4096 });
@@ -1883,7 +1968,7 @@
             "Re-read your notes and the textbook section on " + t + " slowly, marking every step you can't yet explain.",
             "Redo the hardest worked example on " + t + " with the solution covered, then check it.",
             "Do several practice problems on " + t + ", then use the Tutor tab to self-check.",
-            "Bring your specific stuck point on " + t + " to your next SI session."
+            "Bring your specific stuck point on " + t + " to your next study session."
           ]
         });
       });
@@ -1920,7 +2005,7 @@
       tips: [
         "Study a little each day rather than cramming.",
         "Turn each topic into a question and try to answer it without notes.",
-        "Bring your stuck points to your SI session."
+        "Bring your stuck points to your study session."
       ]
     } };
   }
@@ -1976,14 +2061,14 @@
       required: ["summary", "days", "tips"], additionalProperties: false
     };
     var today = new Date();
-    var system = "You are an SI (Supplemental Instruction) study coach turning a study plan into a concrete DAY-BY-DAY schedule that fits into the time the student actually has free. " +
+    var system = "You are a study coach turning a study plan into a concrete DAY-BY-DAY schedule that fits into the time the student actually has free. " +
       "Work forward from today for about 10–14 days. For each day give a label (e.g. \"Mon\") and a 'when' (an actual date like \"" + today.toLocaleDateString() + "\" onward). Inside each day, add one or more study blocks with a 'time' (a realistic slot that AVOIDS the student's stated commitments and busy calendar events), a 'focus' (the topic/unit from the study plan), and 'what' (a specific action — read, practice problems, self-quiz). " +
-      "Spread the plan's units sensibly, do heavier review before any exam dates found in the materials, keep sessions short (30–90 min) with breaks, and don't schedule study on top of the student's busy blocks. If the student gave little availability, assume typical evenings/weekends but say so. Add a few short tips.";
-    var user = "COURSE: " + (course.name || "a college course") +
+      "Spread the plan's units sensibly, do heavier review before any exam/test dates found in the materials, keep sessions short (30–90 min) with breaks, and don't schedule study on top of the student's busy blocks. If the student gave little availability, assume typical evenings/weekends but say so. Add a few short tips.";
+    var user = "COURSE: " + (course.name || "a course") +
       (planText ? "\n\nSTUDY PLAN:\n" + planText : "") +
       (availabilityText ? "\n\nSTUDENT'S WEEKLY COMMITMENTS / FREE TIME (in their words):\n" + availabilityText : "") +
       (busy.length ? "\n\nBUSY CALENDAR EVENTS (from their imported calendar — do NOT schedule study over these):\n" + busy.join("\n") : "") +
-      (context ? "\n\nCOURSE MATERIALS (for exam dates/deadlines):\n" + context : "") +
+      (context ? "\n\nCOURSE MATERIALS (for exam/test dates/deadlines):\n" + context : "") +
       "\n\nBuild the day-by-day study schedule now around their free time.";
     var raw = await callClaude({ system: system, user: user, schema: schema, maxTokens: 4096 });
     var parsed = parseJsonLoose(raw);
@@ -2011,7 +2096,7 @@
         (busy && busy.length ? ", working around your imported calendar" : "") +
         ". Add your Anthropic API key for a schedule tailored to your exact availability and exam dates.",
       days: days,
-      tips: ["Move a block if life happens — just don't skip the day entirely.", "Protect the slots before an exam.", "Bring stuck points to your SI session."]
+      tips: ["Move a block if life happens — just don't skip the day entirely.", "Protect the slots before a test.", "Bring stuck points to your study session."]
     } };
   }
 
@@ -2025,7 +2110,7 @@
       focus: "The student is preparing for FINALS WEEK — cumulative final exams across the whole term, often several within a few days. Build a 2-week countdown. Prioritize the highest-weight and hardest units, space cumulative review so every topic is revisited at least twice, and protect sleep and exam-day logistics. Work backward from the exam dates in the materials if they are stated." },
     { id: "midterms", title: "Midterm push", icon: IC.calendar, tag: "~10 days out",
       blurb: "The first real exams of the term. Lock in the core concepts and find your weak spots early, while there's still time to fix them.",
-      focus: "The student is preparing for MIDTERM EXAMS — the first major exams of the term covering the opening units. Build a ~10-day countdown that diagnoses weak spots early with practice problems, then drills them. Emphasize doing problems over re-reading, and bringing stuck points to an SI session." },
+      focus: "The student is preparing for MIDTERM EXAMS — the first major exams of the term covering the opening units. Build a ~10-day countdown that diagnoses weak spots early with practice problems, then drills them. Emphasize doing problems over re-reading, and bringing stuck points to an study session." },
     { id: "summer", title: "Summer prep for a hard course", icon: IC.sun, tag: "Over the break",
       blurb: "Get a head start on a course you know will be tough. Preview the foundations over the summer so week one feels like review, not a cold start.",
       focus: "The student wants to PREVIEW A DIFFICULT UPCOMING COURSE over summer break, before it officially starts. Build a relaxed multi-week summer plan: shore up prerequisite skills, preview the first few units so the term opens as review, and set a sustainable weekly rhythm. Frame this as getting ahead, not catching up — steady and low-pressure." },
@@ -2060,7 +2145,7 @@
       },
       required: ["title", "summary", "units", "tips"], additionalProperties: false
     };
-    var system = "You are an SI (Supplemental Instruction) study coach building a focused prep plan for a specific high-stakes stretch of the term. " + season.focus +
+    var system = examDomain() + "You are building a focused prep plan for a specific high-stakes stretch before an electrician exam. " + season.focus +
       " Break the run-up into ordered milestones. For each milestone give: a label, a 'when' phrased as a countdown toward the target (e.g. \"2 weeks out\", \"The week before\", \"Exam day\"), the topics to hit, and 2-4 specific actions. Add a few short overall tips. Ground everything in the student's materials — use the real topics, exam dates, and schedule when present; never invent dates that aren't there.";
     var user = "COURSE MATERIALS:\n" + context + "\n\nBuild a \"" + season.title + "\" prep plan for this course from the materials above.";
     var raw = await callClaude({ system: system, user: user, schema: schema, maxTokens: 4096 });
@@ -2084,14 +2169,14 @@
         { label: "Set up", when: "Week 1", topics: ["Syllabus", "Schedule & exam dates"],
           study: ["Read the syllabus closely and add every exam and deadline to your calendar.", "Set up your notes and upload the syllabus under Materials."] },
         { label: "Build the habit", when: "Week 2", topics: topics.slice(0, half),
-          study: ["Attend your first SI session early.", "Lock in a weekly study block before the workload spikes."] }
+          study: ["Attend your first study session early.", "Lock in a weekly study block before the workload spikes."] }
       ];
     } else if (season.id === "comeback") {
       units = [
         { label: "Diagnose", when: "This week", topics: topics.slice(0, half),
           study: ["Review the returned exam — sort each miss into content gap, technique, or time.", "List the two or three topics that cost you the most points."] },
         { label: "Rebuild & retry", when: "Before the next exam", topics: topics.slice(half),
-          study: ["Re-learn the shaky fundamentals, then drill them with practice problems.", "Bring your stuck points to your SI session and change one study habit."] }
+          study: ["Re-learn the shaky fundamentals, then drill them with practice problems.", "Bring your stuck points to your study session and change one study habit."] }
       ];
     } else {
       // finals / midterms: space cumulative review, then a final pass.
@@ -2111,7 +2196,7 @@
       tips: [
         "Work backward from the date — decide what to finish each day.",
         "Do problems from memory instead of re-reading; that's what the exam asks for.",
-        "Bring your stuck points to your SI session."
+        "Bring your stuck points to your study session."
       ]
     } };
   }
@@ -2243,7 +2328,7 @@
   var EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 
   // Pull the teaching-team contacts a student would use to reach people in
-  // the course — professors, TAs, SI leaders, etc. — from the materials.
+  // the course — professors, TAs, instructors, etc. — from the materials.
   async function extractContacts(course) {
     if (!claudeReady()) return localExtractContacts(course);
     var context = course.materials.map(function (m) { return "### " + m.filename + "\n" + m.text; }).join("\n\n");
@@ -2268,13 +2353,13 @@
       "For each person return:\n" +
       "- firstName and lastName: split their name into first and last (strip titles like Dr./Prof.; handle \"Last, First\" ordering). A person's full name may appear in the document title, header, or email even when a contact cell shows only a surname or \"Prof. Lastname\" — use the fullest version of the name found ANYWHERE in the document and always include the given/first name when it appears.\n" +
       "- name: the full name.\n" +
-      "- role: one of \"Professor\", \"Instructor\", \"Teaching Assistant\", \"SI Leader\", \"Lab Instructor\", \"Grader\", \"Coordinator\".\n" +
+      "- role: one of \"Professor\", \"Instructor\", \"Teaching Assistant\", \"Instructor\", \"Lab Instructor\", \"Grader\", \"Coordinator\".\n" +
       "- section: the role-specific detail — for a Professor/Instructor, which lecture section or division they teach (e.g. \"Section 001\"); for a TA/Grader, which recitation/lab sections or students they are responsible for; for an SI/PL leader, their session days/times. Empty if not stated.\n" +
-      "- email; phone; office (room/building); hours (their office hours or, for an SI leader, their help-session times); semesters (which term(s) this syllabus is for or that they teach, e.g. \"Fall 2026\", \"Spring\" — only if stated); notes (anything else useful, like a preferred contact method).\n\n" +
+      "- email; phone; office (room/building); hours (their office hours or, for an instructor, their help-session times); semesters (which term(s) this syllabus is for or that they teach, e.g. \"Fall 2026\", \"Spring\" — only if stated); notes (anything else useful, like a preferred contact method).\n\n" +
       "CRITICAL: A name is a PERSON's name. NEVER put a meeting location, room, building, delivery mode, or link into a name field — values like \"Webex\", \"Zoom\", \"Online\", \"In person\", \"Hybrid\", \"TBD\", a room number, or a URL are locations/modalities and belong in office or hours, never in name/firstName/lastName. If a person's office hours are held on Webex/Zoom/online, put that in the office or hours field and still find their real name elsewhere in the document.\n\n" +
       "Use ONLY information stated in the materials — never invent a name, email, phone number, or semester. Leave any field you don't find as an empty string. Return an empty list if the materials name no contacts.";
     var user = "COURSE MATERIALS:\n" + context + "\n\nExtract every course contact (people to reach) from the materials above.";
-    // Large rosters (many sections, TAs, SI leaders) can run long — give the
+    // Large rosters (many sections, TAs, instructors) can run long — give the
     // structured output plenty of room so the JSON isn't truncated mid-array.
     var raw = await callClaude({ system: system, user: user, schema: schema, maxTokens: 8192 });
     return JSON.parse(raw).contacts || [];
@@ -2300,7 +2385,7 @@
   function guessRole(s) {
     var l = s.toLowerCase();
     if (/teaching assistant|\bt\.?a\.?s?\b/.test(l)) return "Teaching Assistant";
-    if (/\bs\.?i\.?\b|supplemental instruction|peer leader|pltl/.test(l)) return "SI Leader";
+    if (/\bs\.?i\.?\b|supplemental instruction|peer leader|pltl/.test(l)) return "Instructor";
     if (/professor|prof\b/.test(l)) return "Professor";
     if (/instructor|lecturer|faculty/.test(l)) return "Instructor";
     if (/coordinator/.test(l)) return "Coordinator";
@@ -2823,15 +2908,16 @@
     if (!session) return;
     var navItems, label, list;
     if (isLeader()) {
-      navItems = navItem("home", IC.school, "Classrooms") + navItem("lnew", IC.plus, "New classroom");
+      navItems = navItem("home", IC.school, "Classrooms") + navItem("lnew", IC.plus, "New classroom") +
+        navItem("quicktest", IC.spark, "Quick test");
       label = "Your classrooms";
       var owned = ownedClassrooms();
       list = owned.length ? owned.map(function (c) {
         return railRow(c.id, "data-room", classroomColor(c), c.name, view.page === "lclass" && c.id === view.classroomId);
       }).join("") : '<div class="rail-empty">No classrooms yet.</div>';
     } else {
-      navItems = navItem("classrooms", IC.school, "Join a class") + navItem("courses", IC.grid, "Courses") +
-        navItem("new", IC.plus, "New course");
+      navItems = navItem("quicktest", IC.spark, "Quick test") + navItem("courses", IC.grid, "Courses") +
+        navItem("classrooms", IC.school, "Join a class") + navItem("new", IC.plus, "New course");
       label = "Your classrooms";
       var joined = joinedClassrooms();
       var clRows = joined.length ? joined.map(function (c) {
@@ -2842,21 +2928,36 @@
       }).join("") : '<div class="rail-empty">No courses yet.</div>';
       list = clRows + '<div class="nav-label rail-subhead">Your courses</div>' + courseRows;
     }
-    primaryNav.innerHTML = navItems;
+    // Global "which exam am I studying for" picker. Drives every AI prompt via
+    // examDomain() and the default exam on new practice tests.
+    var examPicker = '<div class="exam-pick">' +
+      '<label class="nav-label" for="examSelect">Studying for</label>' +
+      '<select id="examSelect" class="exam-select">' +
+      EXAM_ORDER.map(function (k) {
+        return '<option value="' + k + '"' + (k === state.exam ? ' selected' : '') + '>' + esc(EXAMS[k].label) + '</option>';
+      }).join("") + '</select></div>';
+    primaryNav.innerHTML = navItems + examPicker;
     railListLabel.textContent = label;
     courseList.innerHTML = list;
+
+    var examSel = document.getElementById("examSelect");
+    if (examSel) examSel.onchange = function () { state.exam = examSel.value; persist(); render(); };
 
     var initials = (session.name || "?").trim().split(/\s+/).map(function (w) { return w ? w[0] : ""; }).slice(0, 2).join("").toUpperCase() || "?";
     userBlock.innerHTML =
       '<div class="av">' + esc(initials) + '</div>' +
-      '<div class="who">' + esc(session.name) + '<small>' + (isLeader() ? "SI Leader" : "Student") + '</small></div>' +
+      '<div class="who">' + esc(session.name) + '<small>' + (isLeader() ? "Instructor" : "Student") + '</small></div>' +
       '<button class="signout" id="signOutBtn" title="Sign out" aria-label="Sign out">' + IC.logout + '</button>';
     var so = document.getElementById("signOutBtn");
-    if (so) so.onclick = function () { if (confirm("Sign out of SIsta?")) signOut(); };
+    if (so) so.onclick = function () { if (confirm("Sign out of Sparky?")) signOut(); };
   }
 
   // ---------- page router ----------
   function renderPage() {
+    // Quick test is a top-level, course-free practice exam available to any role.
+    if (view.page === "quicktest") {
+      pageEl.innerHTML = quickTestPage(); wirePage(); typesetMath(pageEl); return;
+    }
     if (isLeader()) {
       if (view.page === "lnew") pageEl.innerHTML = newClassroomPage();
       else if (view.page === "lclass" && currentClassroom()) pageEl.innerHTML = leaderClassroomPage(currentClassroom());
@@ -2882,19 +2983,19 @@
   function authScreen() {
     var r = authRole;
     return '<div class="auth-card">' +
-      '<div class="auth-brand"><div class="mark">' + IC.spark + '</div><div class="name">SIsta</div></div>' +
-      '<h1>Sign in</h1><p class="sub">Choose how you’re using SIsta. You can switch anytime by signing out.</p>' +
+      '<div class="auth-brand"><div class="mark">' + IC.spark + '</div><div class="name">Sparky</div></div>' +
+      '<h1>Sign in</h1><p class="sub">Choose how you’re using Sparky. You can switch anytime by signing out.</p>' +
       '<div class="role-row">' +
         '<button class="role-opt ' + (r === "student" ? "on" : "") + '" data-role="student">' +
           '<span class="ri">' + IC.cap + '</span><span class="rt">Student</span>' +
-          '<span class="rd">Study your courses and join your SI leader’s classroom.</span></button>' +
+          '<span class="rd">Study your courses and join your instructor’s classroom.</span></button>' +
         '<button class="role-opt ' + (r === "leader" ? "on" : "") + '" data-role="leader">' +
-          '<span class="ri">' + IC.school + '</span><span class="rt">SI Leader</span>' +
+          '<span class="ri">' + IC.school + '</span><span class="rt">Instructor</span>' +
           '<span class="rd">Run a classroom: share files, manage your roster, build sessions.</span></button>' +
       '</div>' +
       '<label class="field-label" for="authName">Your name</label>' +
       '<input type="text" id="authName" placeholder="' + (r === "leader" ? "e.g. Gillian B." : "e.g. Alex Chen") + '" value="' + esc(authName) + '" />' +
-      '<div class="auth-actions"><button class="btn primary" id="authGo">Continue as ' + (r === "leader" ? "SI Leader" : "Student") + '</button></div>' +
+      '<div class="auth-actions"><button class="btn primary" id="authGo">Continue as ' + (r === "leader" ? "Instructor" : "Student") + '</button></div>' +
       '<div class="auth-foot">Everything stays in this browser — no account needed.</div>' +
     '</div>';
   }
@@ -2929,7 +3030,7 @@
     if (mats.length === 0) {
       return '<div class="empty" style="padding:40px 20px">' + IC.file +
         '<div class="big">Nothing here yet</div><div class="sm">' +
-        (delAttr ? 'Upload your first file below.' : 'Your SI leader hasn’t shared any materials yet.') + '</div></div>';
+        (delAttr ? 'Upload your first file below.' : 'Your instructor hasn’t shared any materials yet.') + '</div></div>';
     }
     return mats.map(function (m) {
       return '<div class="mat' + (delAttr ? '' : ' readonly') + '" data-mat="' + m.id + '"><div class="fic">' + IC.file + '</div>' +
@@ -2973,7 +3074,7 @@
     if (q.status === "answered") return { cls: "answered", text: "Answered by leader" };
     if (q.status === "resolved") return { cls: "resolved", text: "Resolved with AI" };
     if (q.status === "ai") return { cls: "ai", text: "AI answered" };
-    return { cls: "pending", text: "Awaiting SI leader" };
+    return { cls: "pending", text: "Awaiting instructor" };
   }
   // Render one question card. `leader` toggles the leader's answer composer;
   // the asker gets the AI/leader decision buttons on their own questions.
@@ -3000,7 +3101,7 @@
             '<button class="btn ghost sm" data-qshowai="' + q.id + '">' + IC.spark + 'Show the AI answer</button></div>' : "");
       ai = '<div class="qans-wrap">' + pointer + answer + '</div>';
     }
-    var lead = q.leaderAnswer ? '<div class="qans leader"><div class="qans-lbl">Answer from ' + esc(q.leaderAnswer.byName || "your SI leader") + '</div>' +
+    var lead = q.leaderAnswer ? '<div class="qans leader"><div class="qans-lbl">Answer from ' + esc(q.leaderAnswer.byName || "your instructor") + '</div>' +
         '<div class="qans-body">' + fmt(q.leaderAnswer.content) + '</div></div>' : "";
     // The asker's decision after an AI answer, or a nudge to escalate.
     var actionsRow = "";
@@ -3013,7 +3114,7 @@
         actionsRow = '<div class="qactions"><button class="btn ghost sm" data-qai="' + q.id + '">' + IC.file + 'Where can I find this in my notes?</button></div>';
       } else if (q.status === "resolved") {
         actionsRow = '<div class="qactions"><span class="qprompt">You marked this solved.</span>' +
-          '<button class="btn ghost sm" data-qescalate="' + q.id + '">' + IC.help + 'Actually, ask the SI leader</button></div>';
+          '<button class="btn ghost sm" data-qescalate="' + q.id + '">' + IC.help + 'Actually, ask the instructor</button></div>';
       }
     }
     var leaderBox = "";
@@ -3035,17 +3136,17 @@
       : all.filter(function (q) { return q.askerId === (session && session.id); });
     var lead = leader
       ? 'Questions your students sent you — either asked directly or escalated after an AI answer wasn’t enough. Answer directly, or tap <strong>AI draft</strong> for a starting point from the class materials.'
-      : 'Send your question to your SI leader. Before any AI answer, SISTA points you to <strong>where in your own notes</strong> the topic lives — the full AI answer stays hidden until you tap <strong>Show the AI answer</strong>. For open-ended help anytime, use the <strong>Chat</strong> tab.';
+      : 'Send your question to your instructor. Before any AI answer, Sparky points you to <strong>where in your own notes</strong> the topic lives — the full AI answer stays hidden until you tap <strong>Show the AI answer</strong>. For open-ended help anytime, use the <strong>Chat</strong> tab.';
     var list = qs.length
       ? '<div class="qa-list">' + qs.map(function (q) { return questionCardHTML(q, leader); }).join("") + '</div>'
       : '<div class="empty" style="padding:44px 20px">' + IC.inbox +
           '<div class="big">No questions yet</div>' +
-          '<div class="sm">' + (leader ? "When a student sends you a question, it’ll show up here." : "Ask your SI leader below. Prefer to work it out with AI? Use the Chat tab, or tap “Get a quick AI answer.”") + '</div></div>';
+          '<div class="sm">' + (leader ? "When a student sends you a question, it’ll show up here." : "Ask your instructor below. Prefer to work it out with AI? Use the Chat tab, or tap “Get a quick AI answer.”") + '</div></div>';
     var composer = leader ? "" :
       '<div class="ask-composer"><h3>Ask a question</h3>' +
-        '<p class="hint">This goes to your SI leader. Prefer to work it out yourself? Tap <strong>Find it in my notes</strong> and SISTA points you to where the topic lives in your materials — the AI answer stays hidden until you ask to see it. For open-ended questions, use the <strong>Chat</strong> tab.</p>' +
-        '<textarea id="askInput" placeholder="e.g. Can you explain the difference between the two methods from lecture 3?"></textarea>' +
-        '<div class="ask-actions"><button class="btn primary" id="askLeaderBtn">' + IC.send + 'Ask SI leader</button>' +
+        '<p class="hint">This goes to your instructor. Prefer to work it out yourself? Tap <strong>Find it in my notes</strong> and Sparky points you to where the topic lives in your materials — the AI answer stays hidden until you ask to see it. For open-ended questions, use the <strong>Chat</strong> tab.</p>' +
+        '<textarea id="askInput" placeholder="e.g. How do I size the conductor for this branch circuit?"></textarea>' +
+        '<div class="ask-actions"><button class="btn primary" id="askLeaderBtn">' + IC.send + 'Ask instructor</button>' +
           '<button class="btn ghost" id="askAiBtn">' + IC.file + 'Find it in my notes</button></div></div>';
     return '<div class="content-inner"><p class="sec-lead">' + lead + '</p>' + list + composer + '</div>';
   }
@@ -3117,7 +3218,7 @@
           var ta = pageEl.querySelector('[data-qreply="' + id + '"]');
           if (!q || !ta) return;
           var text = ta.value.trim(); if (!text) { ta.focus(); return; }
-          q.leaderAnswer = { content: text, byName: (session && session.name) || cl.leaderName || "SI Leader", createdAt: Date.now() };
+          q.leaderAnswer = { content: text, byName: (session && session.name) || cl.leaderName || "Instructor", createdAt: Date.now() };
           q.status = "answered";
           persist(); renderPage();
         };
@@ -3158,7 +3259,7 @@
           var pointer = await locateInMaterials(cl, q.text);
           q.aiAnswer = { pointer: pointer, content: "", citations: [], createdAt: Date.now() };
         } catch (e) {
-          q.aiAnswer = { pointer: "⚠️ Couldn't look that up — " + e.message + "\n\nTap “I still need help” to send this to your SI leader.", content: "", citations: [], createdAt: Date.now() };
+          q.aiAnswer = { pointer: "⚠️ Couldn't look that up — " + e.message + "\n\nTap “I still need help” to send this to your instructor.", content: "", citations: [], createdAt: Date.now() };
         }
         persist(); renderPage();
       };
@@ -3209,7 +3310,7 @@
     }
     return '<div class="page-scroll"><div class="page-inner">' +
       '<div class="page-head"><div><h1 class="page-title">Your classrooms</h1>' +
-        '<p class="page-sub">Create a classroom, share its join code with students, upload materials, and generate SI practice sessions for everyone.</p></div>' +
+        '<p class="page-sub">Create a class, share its join code with students, upload materials, and build practice tests and study sessions for everyone.</p></div>' +
         (owned.length ? '<button class="btn primary" data-nav-btn="lnew">' + IC.plus + 'New classroom</button>' : '') + '</div>' +
       cards + '</div></div>';
   }
@@ -3224,7 +3325,7 @@
       '<div class="form-card"><h1 class="page-title">Create a classroom</h1>' +
         '<p class="page-sub" style="margin-bottom:22px">Name it and pick a color. You’ll get a join code to share with your students.</p>' +
         '<label class="field-label" for="clName">Classroom name</label>' +
-        '<input type="text" id="clName" placeholder="CHEM 116 — Tue/Thu SI" />' +
+        '<input type="text" id="clName" placeholder="Electrical 101 — Journeyman Prep" />' +
         '<label class="field-label" style="margin-top:18px">Color</label>' +
         '<div class="swatch-row" id="swatchRow">' + sw + '</div>' +
         '<div class="form-actions"><button class="btn ghost" data-nav-btn="home">Cancel</button>' +
@@ -3244,12 +3345,10 @@
       '</div></div>';
     var unanswered = clUnanswered(cl);
     var tabs = '<div class="tabs">' + roomTabBtn("materials", "Materials") + roomTabBtn("people", "People") +
-      roomTabBtn("announce", "Announcements") +
       roomTabBtn("questions", "Questions" + (unanswered ? " (" + unanswered + ")" : "")) +
       roomTabBtn("generate", "Generate sessions") + '</div>';
     var body;
     if (view.classroomTab === "people") body = renderLeaderPeople(cl);
-    else if (view.classroomTab === "announce") body = renderLeaderAnnouncements(cl);
     else if (view.classroomTab === "generate") body = renderLeaderGenerate(cl);
     else if (view.classroomTab === "questions") body = askBoardHTML(cl, true);
     else body = renderLeaderMaterials(cl);
@@ -3292,43 +3391,6 @@
     return '<div class="content-inner">' + share + body + '</div>';
   }
 
-  // One shared list of announcements, newest first. `leader` adds delete buttons.
-  function announcementsListHTML(cl, leader) {
-    var anns = (cl.announcements || []).slice().sort(function (a, b) { return b.createdAt - a.createdAt; });
-    if (!anns.length) {
-      return '<div class="empty" style="padding:36px 20px">' + IC.megaphone +
-        '<div class="big">No announcements yet</div><div class="sm">' +
-        (leader ? "Post one below — students see it in their Announcements tab." : "Your SI leader hasn’t posted anything yet. Check back before class.") +
-        '</div></div>';
-    }
-    return '<div class="ann-list">' + anns.map(function (a) {
-      return '<div class="ann-card"><div class="ann-head"><span class="ann-who">' + esc(a.byName || cl.leaderName || "SI Leader") + '</span>' +
-        '<span class="ann-time">' + relTime(a.createdAt) + '</span>' +
-        (leader ? '<button class="ann-del" data-anndel="' + a.id + '" title="Delete" aria-label="Delete announcement">' + IC.trash + '</button>' : '') +
-        '</div><div class="ann-body">' + fmt(a.text) + '</div></div>';
-    }).join("") + '</div>';
-  }
-  // A standing nudge: SI supplements class — it never replaces it.
-  function classNudgeHTML() {
-    return '<div class="class-nudge">' + IC.school + '<span><strong>Go to class first.</strong> SI builds on your lectures — the more you show up, the more these sessions do for you.</span></div>';
-  }
-  function renderLeaderAnnouncements(cl) {
-    return '<div class="content-inner">' +
-      '<p class="sec-lead">Post reminders and announcements for your class — exam dates, room changes, what to review, or a nudge to show up. Everyone in the classroom sees these in their <strong>Announcements</strong> tab.</p>' +
-      classNudgeHTML() +
-      '<div class="ann-compose"><h3>New announcement</h3>' +
-        '<textarea id="annInput" placeholder="e.g. Reminder: Exam 2 is Thursday. Come to Wednesday’s SI ready to work problems from Ch. 5–6."></textarea>' +
-        '<div class="ann-actions"><button class="btn primary" id="annPostBtn">' + IC.send + 'Post announcement</button></div></div>' +
-      announcementsListHTML(cl, true) + '</div>';
-  }
-  function renderStudentAnnouncements(cl) {
-    return '<div class="content-inner">' +
-      '<p class="sec-lead">Announcements and reminders from your SI leader.</p>' +
-      classNudgeHTML() +
-      '<div class="soft-note">' + IC.key + '<span>Heads up: your SI leader can set some practice sessions to <strong>unlock only for students who attended class</strong>. If a session looks locked, go to class — then ask your leader to grant you access.</span></div>' +
-      announcementsListHTML(cl, false) + '</div>';
-  }
-
   // Topic suggestion chips + "suggest more" button, shared by both gen modes.
   function roomSuggestBlock(cl) {
     var seen = {}, suggestions = [];
@@ -3346,13 +3408,13 @@
 
   function renderLeaderGenerate(cl) {
     // The leader chooses how to build: the existing practice worksheet students
-    // self-study, or the optional in-person SI session plan (Purdue form).
+    // self-study, or the optional in-person study session plan (Purdue form).
     var mode = view.genMode === "plan" ? "plan" : "worksheet";
     var toggle = '<div class="gen-mode">' +
       '<button class="gen-mode-opt ' + (mode === "worksheet" ? "on" : "") + '" data-genmode="worksheet">' + IC.file +
         '<span><span class="gm-t">Practice worksheet</span><span class="gm-d">Self-study Q&amp;A, published to students</span></span></button>' +
       '<button class="gen-mode-opt ' + (mode === "plan" ? "on" : "") + '" data-genmode="plan">' + IC.school +
-        '<span><span class="gm-t">SI session plan</span><span class="gm-d">Your in-person facilitation plan (optional)</span></span></button>' +
+        '<span><span class="gm-t">study session plan</span><span class="gm-d">Your in-person facilitation plan (optional)</span></span></button>' +
       '</div>';
     return '<div class="content-inner">' + toggle +
       (mode === "plan" ? renderPlanMode(cl) : renderWorksheetMode(cl)) + '</div>';
@@ -3368,40 +3430,17 @@
         '<div style="margin-top:10px"><button class="btn ghost sm" id="roomSessionDel">' + IC.trash + 'Delete this session</button></div></div>';
     }
     var worksheet = "";
-    var gate = "";
     var active = cl.sessions[cl.sessions.length - 1];
     if (view.clSession) active = cl.sessions.find(function (s) { return s.id === view.clSession; }) || active;
-    if (active) {
-      gate = sessionGateHTML(cl, active);
-      worksheet = renderWorksheet(active, cl, active.grades || {}, { origin: "leader", editable: true });
-    }
+    if (active) worksheet = renderWorksheet(active, cl, active.grades || {}, { origin: "leader", editable: true });
     return '<p class="sec-lead">Generate a Purdue SI-style practice session from a <strong>topic</strong>, from the <strong>files you uploaded</strong>, or from a free-form <strong>request</strong>. Published sessions appear in every student’s Sessions tab for this classroom. Use <strong>Edit session</strong> to fine-tune any question or answer before students see it.</p>' +
       roomSuggestBlock(cl) +
       '<div class="gen-row"><input type="text" id="roomTopicInput" placeholder="Type a topic or a request, e.g. “make a session on titration curves”" />' +
         '<button class="btn primary" id="roomGenBtn">' + IC.wand + 'Generate &amp; publish</button></div>' +
-      roomGroundChip(cl) + picker + gate + worksheet;
+      roomGroundChip(cl) + picker + worksheet;
   }
 
-  // Per-session attendance gate: the leader locks a published session so only
-  // the students they check (those who came to class) can open it.
-  function sessionGateHTML(cl, s) {
-    var gated = !!s.gated;
-    var roster = cl.members || [];
-    var checks = roster.length
-      ? '<div class="gate-students">' + roster.map(function (m) {
-          var on = (s.allowedStudents || []).indexOf(m.id) !== -1;
-          return '<label class="gate-student"><input type="checkbox" data-gatestudent="' + m.id + '"' +
-            (on ? ' checked' : '') + (gated ? '' : ' disabled') + ' /> ' + esc(m.name) + '</label>';
-        }).join("") + '</div>'
-      : '<div class="hint" style="margin-top:8px">No students have joined yet — share your join code first.</div>';
-    return '<div class="session-gate' + (gated ? ' on' : '') + '">' +
-      '<label class="gate-toggle"><input type="checkbox" id="gateToggle"' + (gated ? ' checked' : '') + ' />' +
-        IC.lock + '<span>Require class attendance to open this session</span></label>' +
-      '<p class="hint">When on, only the students you check below can open this session in their Practice sessions tab — a way to reward the students who came to class. Students are told their SI leader controls this.</p>' +
-      checks + '</div>';
-  }
-
-  // The optional SI session-plan builder. Generates a full Purdue Session
+  // The optional study session-plan builder. Generates a full Purdue Session
   // Planning Form the leader runs in person, then optionally posts it as a
   // virtual session (which also generates a practice worksheet for students).
   function renderPlanMode(cl) {
@@ -3416,28 +3455,16 @@
     var active = cl.plans[cl.plans.length - 1];
     if (view.clPlan) active = cl.plans.find(function (p) { return p.id === view.clPlan; }) || active;
     if (active) planView = (view.editPlan === active.id) ? renderPlanEditor(active) : renderPlanView(active, cl);
-    return '<p class="sec-lead">Plan your <strong>in-person</strong> SI session yourself on the Purdue Session Planning Form — <strong>you</strong> write the plan, not AI. Create the session, pick your <strong>two SI tools</strong>, and fill in the <strong>Opener, Main, optional Main 2, and Closer</strong>. When you want practice problems for any activity, tap <strong>Make practice problems</strong> and AI drafts them for that activity only. When you’re ready, <strong>post it as a virtual session</strong> so students get the plan plus a practice worksheet.</p>' +
+    return '<p class="sec-lead">Plan your <strong>in-person</strong> study session on the Purdue Session Planning Form. Each plan pulls real Collaborative Learning Techniques and Learning Strategies from the SI Tool Kit, and the mix changes every time so each session stays fresh. This is <strong>optional</strong> — it’s a planning tool for you. When you’re ready, you can <strong>post it as a virtual session</strong> so students get the plan plus an auto-built practice worksheet.</p>' +
       roomSuggestBlock(cl) +
       '<div class="gen-row"><input type="text" id="roomPlanInput" placeholder="Session focus, e.g. “free body diagrams” or “exam 2 review”" />' +
-        '<button class="btn primary" id="roomPlanGenBtn">' + IC.plus + 'Create session plan</button></div>' +
+        '<button class="btn primary" id="roomPlanGenBtn">' + IC.wand + 'Generate session plan</button></div>' +
       roomGroundChip(cl) + picker + planView;
   }
 
-  // One activity's practice problems, if any have been generated for it.
-  function activityProblemsHTML(a) {
-    if (!a.problems || !a.problems.length) return "";
-    var items = a.problems.map(function (p) {
-      var q = typeof p === "string" ? p : (p.q || "");
-      var ans = typeof p === "string" ? "" : (p.answer || "");
-      return '<li><div class="pa-prob-q">' + esc(q) + '</div>' +
-        (ans ? '<div class="pa-prob-a"><span class="pa-lbl">Answer</span>' + esc(ans) + '</div>' : '') + '</li>';
-    }).join("");
-    return '<div class="pa-problems"><div class="pa-lbl">' + IC.spark + 'Practice problems</div><ol>' + items + '</ol></div>';
-  }
   // Read-only activity cards for a plan, in template order. Shared by the
   // leader's plan view and the student-facing agenda on a posted session.
-  // `editable` (leader view) adds the per-activity "Make practice problems" button.
-  function planActivitiesHTML(plan, editable) {
+  function planActivitiesHTML(plan) {
     var acts = (plan.content && plan.content.activities) || [];
     return acts.map(function (a, i) {
       function field(label, val) {
@@ -3445,13 +3472,8 @@
       }
       var badges = '<div class="pa-badges">' +
         (a.duration ? '<span class="pa-badge pa-time">' + IC.clock + esc(a.duration) + '</span>' : '') +
-        (a.optional ? '<span class="pa-badge pa-opt">Optional</span>' : '') +
         (a.clt ? '<span class="pa-badge pa-clt">CLT · ' + esc(a.clt) + '</span>' : '') +
         (a.strategy ? '<span class="pa-badge pa-strat">Strategy · ' + esc(a.strategy) + '</span>' : '') + '</div>';
-      var probBtn = editable
-        ? '<div class="pa-prob-actions"><button class="btn ghost sm" data-actproblems="' + i + '">' + IC.spark +
-            ((a.problems && a.problems.length) ? 'Regenerate practice problems' : 'Make practice problems') + '</button></div>'
-        : "";
       return '<div class="pa-card pa-role-' + esc(a.role || "main") + '">' +
         '<div class="pa-head"><span class="pa-n">' + (i + 1) + '</span><span class="pa-title">' + esc(a.title || "Activity") + '</span></div>' +
         badges +
@@ -3459,7 +3481,6 @@
         field("References", a.references) +
         (a.breakdown ? '<div class="pa-field pa-breakdown"><span class="pa-lbl">Activity breakdown</span><span class="pa-val">' + esc(a.breakdown) + '</span></div>' : '') +
         field("Check for understanding", a.cfu) +
-        activityProblemsHTML(a) + probBtn +
         '</div>';
     }).join("");
   }
@@ -3495,45 +3516,24 @@
       '</div>' +
       '<div class="ts">Created ' + new Date(plan.createdAt).toLocaleString() + '</div></div>';
     var objective = c.objectives ? '<div class="plan-objective"><span class="pa-lbl">Session objective</span>' + esc(c.objectives) + '</div>' : "";
-    // The leader's two chosen SI tools for the session.
-    var tools = c.tools || {};
-    var toolsBlock = (tools.tool1 || tools.tool2)
-      ? '<div class="plan-tools"><span class="pa-lbl">Your two tools</span>' +
-          (tools.tool1 ? '<span class="plan-tool">' + esc(tools.tool1) + '</span>' : '') +
-          (tools.tool2 ? '<span class="plan-tool">' + esc(tools.tool2) + '</span>' : '') + '</div>'
-      : '<div class="plan-tools plan-tools-empty"><span class="pa-lbl">Your two tools</span><span class="hint">Not picked yet — tap “Edit plan” to choose two SI tools.</span></div>';
     var materials = (c.materialsNeeded && c.materialsNeeded.length)
       ? '<div class="plan-materials"><div class="pa-lbl">Materials to prepare</div><ul>' +
           c.materialsNeeded.map(function (m) { return '<li>' + esc(m) + '</li>'; }).join("") + '</ul></div>' : "";
     var reminder = c.leaderReminder ? '<div class="pa-remind">' + IC.spark + esc(c.leaderReminder) + '</div>' : "";
-    // Extra activities the leader entered to generate practice problems for.
-    var extras = (c.extraProblems || []).map(function (ex, i) {
-      return '<div class="pa-card pa-extra">' +
-        '<div class="pa-head"><span class="pa-title">' + esc(ex.topic || "Extra activity") + '</span>' +
-          '<button class="ed-del" data-extradel="' + i + '" title="Remove" aria-label="Remove">' + IC.trash + '</button></div>' +
-        activityProblemsHTML(ex) +
-        '<div class="pa-prob-actions"><button class="btn ghost sm" data-extraproblems="' + i + '">' + IC.spark +
-          ((ex.problems && ex.problems.length) ? 'Regenerate practice problems' : 'Make practice problems') + '</button></div>' +
-        '</div>';
-    }).join("");
-    var extraBlock = '<div class="plan-extra"><div class="pa-lbl">Additional activities to make practice problems for</div>' +
-      '<p class="hint">Add any other activity or topic and generate practice problems for it — no plan rewrite, just problems.</p>' +
-      (extras ? '<div class="pa-list">' + extras + '</div>' : '') +
-      '<div class="gen-row"><input type="text" id="planExtraInput" placeholder="e.g. unit conversions, exam-2 free-response" />' +
-        '<button class="btn ghost" id="planExtraAddBtn">' + IC.plus + 'Add activity</button></div></div>';
     var postBtn = plan.posted
       ? '<button class="btn ghost sm" id="planPostBtn">' + IC.school + 'Update virtual session</button>'
       : '<button class="btn primary sm" id="planPostBtn">' + IC.school + 'Post as virtual session</button>';
     var actions = '<div class="plan-actions">' +
       '<button class="btn ghost sm" id="planEditBtn">' + IC.edit + 'Edit plan</button>' +
+      '<button class="btn ghost sm" id="planRegenBtn">' + IC.wand + 'Regenerate</button>' +
       postBtn +
       '<button class="btn ghost sm" id="planDelBtn">' + IC.trash + 'Delete</button></div>';
     var postedNote = plan.posted
       ? '<div class="plan-posted-note">' + IC.check + 'Students see this plan and a practice worksheet in their Practice sessions tab. Editing here and tapping “Update virtual session” refreshes what they see.</div>'
       : '';
-    return '<div class="plan-view" id="planView">' + header + objective + toolsBlock +
-      '<div class="pa-list">' + planActivitiesHTML(plan, true) + '</div>' +
-      extraBlock + materials + reminder + actions + postedNote + '</div>';
+    return '<div class="plan-view" id="planView">' + header + objective +
+      '<div class="pa-list">' + planActivitiesHTML(plan) + '</div>' +
+      materials + reminder + actions + postedNote + '</div>';
   }
 
   // Inline editor for a plan: header fields plus every field of every activity,
@@ -3563,16 +3563,9 @@
         '<label class="ed-flabel">Check for understanding</label><textarea class="ped-cfu" rows="2">' + esc(a.cfu || "") + '</textarea>' +
         '</div>';
     }).join("");
-    // The session's two SI tools (any CLT or Learning Strategy from the toolkit).
-    // A leading blank lets a leader leave a slot unpicked.
-    var toolOpts = [""].concat(cltOpts, stratOpts);
-    var tools = c.tools || {};
     return '<div class="plan-view ws-edit" id="planEditor">' +
       '<label class="ed-flabel">Session focus / topic</label><input type="text" class="ped-topic" id="pedTopic" value="' + esc(plan.topic) + '" />' +
       '<label class="ed-flabel">Overall session objective</label><textarea class="ped-objectives" id="pedObjectives" rows="2">' + esc(c.objectives || "") + '</textarea>' +
-      '<label class="ed-flabel">Your two tools for this session</label>' +
-      '<div class="ped-tools"><div><span class="ped-tool-lbl">Tool 1</span>' + sel("ped-tool1", toolOpts, tools.tool1 || "") + '</div>' +
-        '<div><span class="ped-tool-lbl">Tool 2</span>' + sel("ped-tool2", toolOpts, tools.tool2 || "") + '</div></div>' +
       '<div class="ped-acts">' + acts + '</div>' +
       '<button class="ed-add" id="pedAddAct">' + IC.plus + 'Add activity</button>' +
       '<label class="ed-flabel">Materials to prepare (one per line)</label><textarea class="ped-materials" id="pedMaterials" rows="3">' + esc((c.materialsNeeded || []).join("\n")) + '</textarea>' +
@@ -3585,7 +3578,7 @@
   function studentClassroomsPage() {
     var joined = joinedClassrooms();
     var joinCard = '<div class="add-card"><h3>Join a classroom</h3>' +
-      '<p class="hint">Enter the join code your SI leader gave you to see their materials and practice sessions.</p>' +
+      '<p class="hint">Enter the join code your instructor gave you to see their materials and practice sessions.</p>' +
       '<div class="join-box"><input type="text" id="joinCode" placeholder="ABC123" maxlength="6" />' +
         '<button class="btn primary" id="joinBtn">' + IC.key + 'Join</button></div></div>';
     var body;
@@ -3598,7 +3591,7 @@
           '<div class="ccard-top"><span class="ccard-dot" style="background:' + classroomColor(c) + '"></span>' +
             '<button class="ccard-del" data-leaveroom="' + c.id + '" title="Leave classroom" aria-label="Leave classroom">' + IC.door + '</button></div>' +
           '<div class="ccard-name">' + esc(c.name) + '</div>' +
-          '<div class="ccard-meta">SI Leader: ' + esc(c.leaderName) + '</div>' +
+          '<div class="ccard-meta">Instructor: ' + esc(c.leaderName) + '</div>' +
           '<div class="ccard-meta" style="margin-top:6px">' + c.materials.length + ' material' + (c.materials.length === 1 ? '' : 's') +
             ' · ' + c.sessions.length + ' session' + (c.sessions.length === 1 ? '' : 's') + '</div>' +
           '<div class="ccard-foot">Open ' + IC.arrowRight + '</div></div>';
@@ -3606,7 +3599,7 @@
     }
     return '<div class="page-scroll"><div class="page-inner">' +
       '<div class="page-head"><div><h1 class="page-title">Classrooms</h1>' +
-        '<p class="page-sub">Join your SI leader’s classroom to see the materials they share and practice with the sessions they build.</p></div></div>' +
+        '<p class="page-sub">Join your instructor’s classroom to see the materials they share and practice with the sessions they build.</p></div></div>' +
       (joined.length ? body + joinCard : joinCard + body) + '</div></div>';
   }
 
@@ -3620,19 +3613,16 @@
     var crumb = '<div class="crumb"><button class="back" data-nav-btn="classrooms">' + IC.arrowLeft + '</button>' +
       '<span data-nav-btn="classrooms" style="cursor:pointer">Classrooms</span><span class="sep">/</span><span class="cur">' + esc(cl.name) + '</span></div>';
     var ctx = '<div class="ctx"><div><h1 class="ctx-title">' + esc(cl.name) + '</h1>' +
-        '<div class="ctx-meta"><span>SI Leader: ' + esc(cl.leaderName) + '</span>' +
+        '<div class="ctx-meta"><span>Instructor: ' + esc(cl.leaderName) + '</span>' +
           '<span class="sep">·</span><span>' + (sharedCount + privCount) + ' material' + ((sharedCount + privCount) === 1 ? '' : 's') + '</span>' +
           '<span class="sep">·</span><span>' + (leaderSessions + ownSessions) + ' session' + ((leaderSessions + ownSessions) === 1 ? '' : 's') + '</span></div>' +
       '</div><div class="ctx-actions"><button class="btn ghost" id="leaveRoomBtn">' + IC.door + 'Leave</button></div></div>';
-    var annCount = (cl.announcements || []).length;
-    var tabs = '<div class="tabs">' + tabBtn("materials", "Materials") +
-      tabBtn("announce", "Announcements" + (annCount ? " (" + annCount + ")" : "")) +
-      tabBtn("contacts", "Contacts") +
-      tabBtn("plan", "Study plan") + tabBtn("prep", "Prep seasons") + tabBtn("grades", "Grade predictor") +
-      tabBtn("tutor", "Tutor") + tabBtn("ask", "Ask") + tabBtn("sessions", "Practice sessions") + '</div>';
+    var tabs = '<div class="tabs">' + tabBtn("materials", "Materials") + tabBtn("test", "Practice test") +
+      tabBtn("sessions", "Practice sessions") + tabBtn("plan", "Study plan") + tabBtn("prep", "Prep seasons") +
+      tabBtn("grades", "Grade predictor") + tabBtn("tutor", "Tutor") + tabBtn("ask", "Ask") + tabBtn("contacts", "Contacts") + '</div>';
     var tab = view.tab === "chat" ? "ask" : view.tab;
     var body;
-    if (tab === "announce") body = renderStudentAnnouncements(cl);
+    if (tab === "test") body = renderPracticeTest(en);
     else if (tab === "contacts") body = renderContacts(en);
     else if (tab === "plan") body = renderPlan(en);
     else if (tab === "prep") body = renderPrep(en);
@@ -3656,9 +3646,9 @@
   }
   function renderClassroomMaterials(cl, en) {
     var shared = cl.materials.length
-      ? '<div class="mat-group-label">' + IC.school + 'Shared by ' + esc(cl.leaderName || "your SI leader") + '</div>' + matListHTML(cl.materials, null)
-      : '<div class="mat-group-label">' + IC.school + 'Shared by your SI leader</div>' +
-        '<div class="empty" style="padding:26px 20px">' + IC.file + '<div class="big">Nothing shared yet</div><div class="sm">Your SI leader hasn’t uploaded any files.</div></div>';
+      ? '<div class="mat-group-label">' + IC.school + 'Shared by ' + esc(cl.leaderName || "your instructor") + '</div>' + matListHTML(cl.materials, null)
+      : '<div class="mat-group-label">' + IC.school + 'Shared by your instructor</div>' +
+        '<div class="empty" style="padding:26px 20px">' + IC.file + '<div class="big">Nothing shared yet</div><div class="sm">Your instructor hasn’t uploaded any files.</div></div>';
     var priv = en.privateMats.length
       ? en.privateMats.map(function (m) {
           return '<div class="mat" data-mat="' + m.id + '"><div class="fic">' + IC.file + '</div>' +
@@ -3670,39 +3660,27 @@
         }).join("")
       : '<div class="empty" style="padding:26px 20px">' + IC.file + '<div class="big">No private files yet</div><div class="sm">Anything you add below is visible only to you.</div></div>';
     return '<div class="content-inner">' +
-      '<p class="sec-lead">Your SI leader’s shared files plus your own private uploads. Private files are visible only to you, and they ground your Tutor, Ask answers, and practice Sessions right alongside the shared ones.</p>' +
+      '<p class="sec-lead">Your instructor’s shared files plus your own private uploads. Private files are visible only to you, and they ground your Tutor, Ask answers, and practice Sessions right alongside the shared ones.</p>' +
       shared +
       '<div class="mat-group-label">' + IC.cap + 'Your private materials</div>' + priv +
-      materialAddCard('Paste text, or load a .txt / .md / .pdf. Whatever you add here is <strong>private to you</strong> — your SI leader and classmates won’t see it.') +
+      materialAddCard('Paste text, or load a .txt / .md / .pdf. Whatever you add here is <strong>private to you</strong> — your instructor and classmates won’t see it.') +
       '</div>';
   }
   // Which session the Sessions tab lands on: the student's explicit pick, else the
-  // Leader sessions this student is allowed to open: all ungated ones, plus any
-  // gated session the leader has granted them (for attending class).
-  function visibleLeaderSessions(cl) {
-    var me = session && session.id;
-    return (cl.sessions || []).filter(function (s) {
-      return !s.gated || (s.allowedStudents || []).indexOf(me) !== -1;
-    });
-  }
   // leader's newest (that's the point of the tab), else their own newest.
   function classroomActiveSession(cl, en) {
-    var vis = visibleLeaderSessions(cl);
-    var all = vis.concat(en.sessions);
+    var all = cl.sessions.concat(en.sessions);
     if (view.activeSession) {
       var picked = all.find(function (s) { return s.id === view.activeSession; });
       if (picked) return picked;
     }
-    return vis[vis.length - 1] || en.sessions[en.sessions.length - 1] || null;
+    return cl.sessions[cl.sessions.length - 1] || en.sessions[en.sessions.length - 1] || null;
   }
-  // Students see the sessions their SI leader publishes AND can generate their
+  // Students see the sessions their instructor publishes AND can generate their
   // own to study from. A student's own sessions live on their private overlay
   // (en.sessions), grouped separately and individually deletable.
   function renderClassroomSessions(cl, en) {
-    var own = en.sessions;
-    var visLeader = visibleLeaderSessions(cl);
-    var lockedCount = (cl.sessions || []).length - visLeader.length;
-    var all = visLeader.concat(own);
+    var own = en.sessions, all = cl.sessions.concat(own);
 
     // Topic ideas to generate from: the classroom's + your own topics, plus any
     // AI-fetched suggestions. No uploads required — pick one or type your own.
@@ -3726,20 +3704,14 @@
       '<div class="gen-row"><input type="text" id="roomGenTopic" placeholder="Or type any topic, e.g. titration curves" />' +
         '<button class="btn primary" id="roomGenBtn">' + IC.spark + 'Generate session</button></div>';
 
-    // Locked-session notice: some leader sessions are gated behind class attendance.
-    var lockNotice = lockedCount
-      ? '<div class="soft-note">' + IC.lock + '<span>' + lockedCount + ' session' + (lockedCount === 1 ? ' is' : 's are') +
-        ' locked — your SI leader unlocks these for students who attended class. Go to class, then ask your leader to grant you access.</span></div>'
-      : "";
-
     if (!all.length) {
       return '<div class="content-inner">' +
-        '<p class="sec-lead">Your SI leader hasn’t published a practice session yet — but you can generate your own to study from. Pick a topic or type one; any shared or private materials make it more specific.</p>' +
-        lockNotice + genBlock + '</div>';
+        '<p class="sec-lead">Your instructor hasn’t published a practice session yet — but you can generate your own to study from. Pick a topic or type one; any shared or private materials make it more specific.</p>' +
+        genBlock + '</div>';
     }
     var opt = function (s) { return '<option value="' + s.id + '">' + esc(s.topic) + ' — ' + new Date(s.createdAt).toLocaleString() + '</option>'; };
     var groups = "";
-    if (visLeader.length) groups += '<optgroup label="From your SI leader">' + visLeader.map(opt).join("") + '</optgroup>';
+    if (cl.sessions.length) groups += '<optgroup label="From your instructor">' + cl.sessions.map(opt).join("") + '</optgroup>';
     if (own.length) groups += '<optgroup label="Your sessions">' + own.map(opt).join("") + '</optgroup>';
     var picker = '<div class="session-pick"><label class="field-label">Sessions</label><select id="sessionSelect">' + groups + '</select></div>';
 
@@ -3751,8 +3723,8 @@
       if (isOwn) worksheet += '<div style="margin-top:12px"><button class="btn ghost sm" id="ownSessionDel">' + IC.trash + 'Delete this session</button></div>';
     }
     return '<div class="content-inner">' +
-      '<p class="sec-lead">Practice sessions your SI leader published for this classroom — plus any you generate yourself. Reveal answers and grade yourself; your progress is saved to your account.</p>' +
-      lockNotice + genBlock + picker + worksheet + '</div>';
+      '<p class="sec-lead">Practice sessions your instructor published for this classroom — plus any you generate yourself. Reveal answers and grade yourself; your progress is saved to your account.</p>' +
+      genBlock + picker + worksheet + '</div>';
   }
 
   // ---------- shared classroom wiring ----------
@@ -3851,7 +3823,6 @@
       var cl = currentClassroom(); if (!cl) return;
       wireRoomTabs();
       if (view.classroomTab === "people") wireLeaderPeople(cl);
-      else if (view.classroomTab === "announce") wireLeaderAnnouncements(cl);
       else if (view.classroomTab === "generate") wireLeaderGenerate(cl);
       else if (view.classroomTab === "questions") wireAskBoard(cl, true);
       else wireRoomMaterialAdd(cl);
@@ -3944,24 +3915,6 @@
       };
     });
   }
-  function wireLeaderAnnouncements(cl) {
-    var input = document.getElementById("annInput"), post = document.getElementById("annPostBtn");
-    var doPost = function () {
-      var text = (input && input.value.trim()) || ""; if (!text) { if (input) input.focus(); return; }
-      if (!cl.announcements) cl.announcements = [];
-      cl.announcements.push({ id: uid(), text: text, byName: (session && session.name) || cl.leaderName || "SI Leader", createdAt: Date.now() });
-      persist(); renderPage();
-    };
-    if (post) post.onclick = doPost;
-    if (input) input.onkeydown = function (e) { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); doPost(); } };
-    Array.prototype.forEach.call(pageEl.querySelectorAll("[data-anndel]"), function (b) {
-      b.onclick = function () {
-        var id = b.getAttribute("data-anndel");
-        cl.announcements = cl.announcements.filter(function (a) { return a.id !== id; });
-        persist(); renderPage();
-      };
-    });
-  }
   function wireLeaderGenerate(cl) {
     // Mode toggle (worksheet vs. in-person plan). Present in both modes.
     Array.prototype.forEach.call(pageEl.querySelectorAll("[data-genmode]"), function (b) {
@@ -4018,24 +3971,6 @@
     var active = cl.sessions[cl.sessions.length - 1];
     if (view.clSession) active = cl.sessions.find(function (s) { return s.id === view.clSession; }) || active;
     if (active) { if (!active.grades) active.grades = {}; wireWorksheet(cl, active, active.grades); wireSessionEditor(active); }
-
-    // Attendance gate: toggle locking, and check off who may open this session.
-    if (active) {
-      var gateToggle = document.getElementById("gateToggle");
-      if (gateToggle) gateToggle.onclick = function () {
-        active.gated = gateToggle.checked; persist(); renderPage();
-      };
-      Array.prototype.forEach.call(pageEl.querySelectorAll("[data-gatestudent]"), function (cb) {
-        cb.onclick = function () {
-          if (!active.allowedStudents) active.allowedStudents = [];
-          var id = cb.getAttribute("data-gatestudent");
-          var i = active.allowedStudents.indexOf(id);
-          if (cb.checked && i === -1) active.allowedStudents.push(id);
-          else if (!cb.checked && i !== -1) active.allowedStudents.splice(i, 1);
-          persist();
-        };
-      });
-    }
   }
 
   function activePlan(cl) {
@@ -4046,17 +3981,23 @@
 
   function wirePlanMode(cl) {
     var gen = document.getElementById("roomPlanGenBtn"), input = document.getElementById("roomPlanInput");
-    // Leaders author the plan themselves — this just seeds a blank template.
-    function createPlan(t) {
+    async function runPlan(t, trigger) {
       t = (t || "").trim();
       if (!t) { alert("Type a session focus, or pick a topic."); return; }
-      var p = newBlankPlan(t);
-      cl.plans.push(p); view.clPlan = p.id; view.editPlan = p.id; persist(); renderPage();
+      var btn = trigger || gen, orig = btn.innerHTML;
+      gen.disabled = true; btn.disabled = true; btn.innerHTML = IC.wand + 'Building plan…';
+      try {
+        var p = await generateSessionPlan(cl, t);
+        cl.plans.push(p); view.clPlan = p.id; view.editPlan = null; persist(); renderPage();
+      } catch (e) {
+        alert("Plan generation failed: " + e.message);
+        gen.disabled = false; btn.disabled = false; btn.innerHTML = orig;
+      }
     }
-    if (gen) gen.onclick = function () { createPlan(input.value); };
-    if (input) input.onkeydown = function (e) { if (e.key === "Enter") createPlan(input.value); };
+    if (gen) gen.onclick = function () { runPlan(input.value, gen); };
+    if (input) input.onkeydown = function (e) { if (e.key === "Enter") runPlan(input.value, gen); };
     Array.prototype.forEach.call(pageEl.querySelectorAll("[data-roomtopic]"), function (chip) {
-      chip.onclick = function () { createPlan(chip.getAttribute("data-roomtopic")); };
+      chip.onclick = function () { runPlan(chip.getAttribute("data-roomtopic"), chip); };
     });
     var sel = document.getElementById("roomPlanSelect");
     if (sel) { var ap = activePlan(cl); if (ap) sel.value = ap.id; sel.onchange = function () { view.clPlan = sel.value; view.editPlan = null; renderPage(); }; }
@@ -4078,57 +4019,18 @@
       cl.plans = cl.plans.filter(function (p) { return p.id !== plan.id; });
       view.clPlan = null; view.editPlan = null; persist(); renderPage();
     };
-
-    // Per-activity "Make practice problems" — the only AI in the plan builder.
-    Array.prototype.forEach.call(pageEl.querySelectorAll("[data-actproblems]"), function (btn) {
-      btn.onclick = async function () {
-        var idx = parseInt(btn.getAttribute("data-actproblems"), 10);
-        var a = (plan.content.activities || [])[idx]; if (!a) return;
-        var orig = btn.innerHTML; btn.disabled = true; btn.innerHTML = IC.spark + 'Making problems…';
-        try {
-          a.problems = await generateActivityProblems(cl, a.title + (plan.topic ? " — " + plan.topic : ""), a.objective);
-          if (plan.posted && plan.postedSessionId) syncPostedSession(cl, plan);
-          persist(); renderPage();
-        } catch (e) {
-          alert("Couldn't make practice problems: " + e.message);
-        } finally {
-          if (btn.isConnected) { btn.disabled = false; btn.innerHTML = orig; }
-        }
-      };
-    });
-
-    // Additional activities: add a topic, generate problems for it, or remove it.
-    var extraAdd = document.getElementById("planExtraAddBtn"), extraInput = document.getElementById("planExtraInput");
-    var doExtraAdd = function () {
-      var t = (extraInput && extraInput.value.trim()) || ""; if (!t) { if (extraInput) extraInput.focus(); return; }
-      if (!plan.content.extraProblems) plan.content.extraProblems = [];
-      plan.content.extraProblems.push({ topic: t, problems: null });
-      persist(); renderPage();
-    };
-    if (extraAdd) extraAdd.onclick = doExtraAdd;
-    if (extraInput) extraInput.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); doExtraAdd(); } };
-    Array.prototype.forEach.call(pageEl.querySelectorAll("[data-extradel]"), function (btn) {
-      btn.onclick = function () {
-        plan.content.extraProblems.splice(parseInt(btn.getAttribute("data-extradel"), 10), 1);
+    var regenBtn = document.getElementById("planRegenBtn");
+    if (regenBtn) regenBtn.onclick = async function () {
+      if (!confirm("Regenerate a fresh plan for “" + plan.topic + "”? This replaces the current plan’s activities.")) return;
+      var orig = regenBtn.innerHTML; regenBtn.disabled = true; regenBtn.innerHTML = IC.wand + 'Regenerating…';
+      try {
+        var np = await generateSessionPlan(cl, plan.topic);
+        // Keep identity + header + any posted link; swap in the new content.
+        plan.content = np.content;
+        if (plan.posted && plan.postedSessionId) syncPostedSession(cl, plan);
         persist(); renderPage();
-      };
-    });
-    Array.prototype.forEach.call(pageEl.querySelectorAll("[data-extraproblems]"), function (btn) {
-      btn.onclick = async function () {
-        var idx = parseInt(btn.getAttribute("data-extraproblems"), 10);
-        var ex = (plan.content.extraProblems || [])[idx]; if (!ex) return;
-        var orig = btn.innerHTML; btn.disabled = true; btn.innerHTML = IC.spark + 'Making problems…';
-        try {
-          ex.problems = await generateActivityProblems(cl, ex.topic);
-          persist(); renderPage();
-        } catch (e) {
-          alert("Couldn't make practice problems: " + e.message);
-        } finally {
-          if (btn.isConnected) { btn.disabled = false; btn.innerHTML = orig; }
-        }
-      };
-    });
-
+      } catch (e) { alert("Regenerate failed: " + e.message); regenBtn.disabled = false; regenBtn.innerHTML = orig; }
+    };
     var postBtn = document.getElementById("planPostBtn");
     if (postBtn) postBtn.onclick = async function () {
       var orig = postBtn.innerHTML; postBtn.disabled = true; postBtn.innerHTML = IC.school + (plan.posted ? 'Updating…' : 'Posting…');
@@ -4147,22 +4049,16 @@
       var mat = document.getElementById("pedMaterials");
       c.materialsNeeded = mat ? mat.value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean) : c.materialsNeeded;
       var rem = document.getElementById("pedReminder"); c.leaderReminder = rem ? rem.value.trim() : c.leaderReminder;
-      // The two SI tools chosen for the session.
-      var tool1El = document.querySelector(".ped-tool1"), tool2El = document.querySelector(".ped-tool2");
-      c.tools = { tool1: tool1El ? tool1El.value : (c.tools && c.tools.tool1) || "",
-                  tool2: tool2El ? tool2El.value : (c.tools && c.tools.tool2) || "" };
       var acts = [];
       Array.prototype.forEach.call(document.querySelectorAll(".ped-act"), function (row) {
         function v(cls) { var el = row.querySelector(cls); return el ? el.value.trim() : ""; }
         var idx = parseInt(row.getAttribute("data-ped-idx"), 10);
         var orig = (c.activities || [])[idx] || {};
         acts.push({
-          title: v(".ped-title"), role: orig.role || "main", optional: !!orig.optional,
+          title: v(".ped-title"), role: orig.role || "main",
           objective: v(".ped-objective"), clt: v(".ped-clt"), strategy: v(".ped-strategy"),
           duration: v(".ped-duration"), references: v(".ped-references"),
-          cfu: v(".ped-cfu"), breakdown: v(".ped-breakdown"),
-          // Keep any practice problems already generated for this activity.
-          problems: orig.problems || null
+          cfu: v(".ped-cfu"), breakdown: v(".ped-breakdown")
         });
       });
       c.activities = acts;
@@ -4216,7 +4112,7 @@
       var code = (codeInp.value || "").trim().toUpperCase();
       if (!code) { codeInp.focus(); return; }
       var cl = findClassroomByCode(code);
-      if (!cl) { alert("No classroom found with code " + code + ". Double-check the code with your SI leader."); return; }
+      if (!cl) { alert("No classroom found with code " + code + ". Double-check the code with your instructor."); return; }
       if (!isMember(cl)) { cl.members.push({ id: session.id, name: session.name, joinedAt: Date.now() }); persist(); }
       navigate({ page: "classroom", classroomId: cl.id, tab: "materials", activeSession: null, sessionSuggestions: null });
     };
@@ -4358,7 +4254,7 @@
     return '<div class="page-scroll"><div class="page-inner">' +
       '<div class="page-head"><div>' +
         '<h1 class="page-title">Courses</h1>' +
-        '<p class="page-sub">Your Supplemental Instruction courses. Open one to add material, ask grounded questions, or build a practice session.</p>' +
+        '<p class="page-sub">Your electrician study areas. Open one to add material, ask grounded questions, take a practice test, or build a study session.</p>' +
       '</div>' + (state.courses.length ? '<button class="btn primary" data-nav-btn="new">' + IC.spark + 'New course</button>' : '') + '</div>' +
       cards + '</div></div>';
   }
@@ -4376,7 +4272,7 @@
         '<h1 class="page-title">Create a course</h1>' +
         '<p class="page-sub" style="margin-bottom:22px">Give it a name and pick a color. You can add materials once it\'s created.</p>' +
         '<label class="field-label" for="ncName">Course name</label>' +
-        '<input type="text" id="ncName" placeholder="CHEM 116" />' +
+        '<input type="text" id="ncName" placeholder="e.g. Electrical Fundamentals, NEC Journeyman" />' +
         '<label class="field-label" style="margin-top:18px">Color</label>' +
         '<div class="swatch-row" id="swatchRow">' + sw + '</div>' +
         '<div class="form-actions">' +
@@ -4400,9 +4296,10 @@
         '<button class="btn ghost" data-goto="materials">' + IC.plus + 'Add material</button>' +
         '<button class="btn primary" data-goto="sessions">' + IC.spark + 'New session</button>' +
       '</div></div>';
-    var tabs = '<div class="tabs">' + tabBtn("materials", "Materials") + tabBtn("contacts", "Contacts") + tabBtn("plan", "Study plan") + tabBtn("prep", "Prep seasons") + tabBtn("grades", "Grade predictor") + tabBtn("tutor", "Tutor") + tabBtn("chat", "Chat") + tabBtn("sessions", "Practice sessions") + '</div>';
+    var tabs = '<div class="tabs">' + tabBtn("materials", "Materials") + tabBtn("test", "Practice test") + tabBtn("sessions", "Practice sessions") + tabBtn("plan", "Study plan") + tabBtn("prep", "Prep seasons") + tabBtn("grades", "Grade predictor") + tabBtn("tutor", "Tutor") + tabBtn("chat", "Chat") + tabBtn("contacts", "Contacts") + '</div>';
     var body;
     if (view.tab === "materials") body = renderMaterials(course);
+    else if (view.tab === "test") body = renderPracticeTest(course);
     else if (view.tab === "contacts") body = renderContacts(course);
     else if (view.tab === "plan") body = renderPlan(course);
     else if (view.tab === "prep") body = renderPrep(course);
@@ -4512,7 +4409,7 @@
   }
 
   function renderContacts(course) {
-    var lead = '<p class="sec-lead">People you can reach in this course — professors, TAs, and SI leaders. Names and details are pulled <strong>primarily from the syllabus</strong> you upload under <strong>Materials</strong>; use <strong>Fill in from web</strong> as a backup to look up a professor\'s full name and the semesters they normally teach. Each card shows where its info came from.</p>';
+    var lead = '<p class="sec-lead">People you can reach in this course — professors, TAs, and instructors. Names and details are pulled <strong>primarily from the syllabus</strong> you upload under <strong>Materials</strong>; use <strong>Fill in from web</strong> as a backup to look up a professor\'s full name and the semesters they normally teach. Each card shows where its info came from.</p>';
     var actions = '<div class="ct-actions">' +
         '<button class="btn primary" id="findContactsBtn">' + IC.users + (course.contacts.length ? 'Refresh from syllabus' : 'Find contacts from syllabus') + '</button>' +
         '<button class="btn ghost" id="enrichOnlineBtn">' + IC.globe + 'Fill in from web</button>' +
@@ -4609,7 +4506,7 @@
       : '<div class="empty" style="padding:32px 20px">' + IC.calendar +
           '<div class="big">No day-by-day guide yet</div><div class="sm">Add your availability above, then tap the button to lay your plan out across the week.</div></div>';
     return '<div class="findtime"><div class="findtime-head"><h3>' + IC.clock + 'Where do I find time to study this?</h3></div>' +
-      '<p class="hint">SISTA can\'t sign in to Google Calendar (this app has no server), but paste your schedule or import a calendar export and it\'ll build a day-by-day plan around your free time.</p>' +
+      '<p class="hint">Sparky can\'t sign in to Google Calendar (this app has no server), but paste your schedule or import a calendar export and it\'ll build a day-by-day plan around your free time.</p>' +
       inputs +
       '<div class="gen-row" style="justify-content:flex-start">' +
         '<button class="btn primary" id="findTimeBtn">' + IC.spark + (has ? 'Rebuild day-by-day guide' : 'Where do I find time to study this?') + '</button>' +
@@ -4836,6 +4733,289 @@
       '</div></div></div>';
   }
 
+  // ============================================================
+  // PRACTICE TEST — scored multiple-choice electrician exam.
+  // AI-generated (grounded in materials + examDomain()) when a key/proxy is
+  // available; otherwise a built-in question bank so it always works offline.
+  // ============================================================
+  // Built-in fallback bank. Each: q, choices[4], correct (0-based), explanation,
+  // topic, level ("fundamentals" | "journeyman").
+  var PT_BANK = [
+    { level: "fundamentals", topic: "Ohm's law", q: "A 120 V circuit supplies a 10 Ω load. How much current flows?",
+      choices: ["12 A", "1200 A", "0.083 A", "130 A"], correct: 0,
+      explanation: "By Ohm's law, I = V / R = 120 / 10 = 12 A." },
+    { level: "fundamentals", topic: "Electrical power", q: "A device draws 5 A at 120 V. What is its power?",
+      choices: ["600 W", "24 W", "125 W", "115 W"], correct: 0,
+      explanation: "Power P = V × I = 120 × 5 = 600 W." },
+    { level: "fundamentals", topic: "Series circuits", q: "In a series circuit, which quantity is the SAME through every component?",
+      choices: ["Current", "Voltage", "Resistance", "Power"], correct: 0,
+      explanation: "Series components share one path, so current is equal everywhere; the source voltage divides across the loads." },
+    { level: "fundamentals", topic: "Parallel circuits", q: "In a parallel circuit, which quantity is the SAME across every branch?",
+      choices: ["Voltage", "Current", "Resistance", "Wattage"], correct: 0,
+      explanation: "Parallel branches connect across the same two nodes, so each branch sees the same voltage; the branch currents add up to the total." },
+    { level: "fundamentals", topic: "Series resistance", q: "Two 10 Ω resistors are wired in series. What is the total resistance?",
+      choices: ["20 Ω", "5 Ω", "10 Ω", "100 Ω"], correct: 0,
+      explanation: "Series resistances add: 10 + 10 = 20 Ω." },
+    { level: "fundamentals", topic: "Parallel resistance", q: "Two 10 Ω resistors are wired in parallel. What is the total resistance?",
+      choices: ["5 Ω", "20 Ω", "10 Ω", "0 Ω"], correct: 0,
+      explanation: "For two equal parallel resistors, R_total = R / 2 = 10 / 2 = 5 Ω, always less than the smallest branch." },
+    { level: "fundamentals", topic: "Conductors", q: "Which material is the best electrical CONDUCTOR?",
+      choices: ["Copper", "Rubber", "Glass", "PVC"], correct: 0,
+      explanation: "Copper is a low-resistance conductor; rubber, glass, and PVC are insulators used to contain current." },
+    { level: "fundamentals", topic: "Wire sizing (AWG)", q: "In the American Wire Gauge (AWG) system, as the gauge NUMBER gets larger, the wire...",
+      choices: ["Gets smaller in diameter", "Gets larger in diameter", "Gets longer", "Carries more current"], correct: 0,
+      explanation: "AWG is inverse: a higher number means a thinner conductor with less ampacity (e.g., 14 AWG is smaller than 10 AWG)." },
+    { level: "fundamentals", topic: "Electrical safety", q: "The main purpose of a lockout/tagout (LOTO) procedure is to...",
+      choices: ["Keep equipment de-energized while it is serviced", "Speed up the repair", "Label circuits for the inspector", "Reduce the electric bill"], correct: 0,
+      explanation: "LOTO isolates and locks the energy source so equipment cannot be re-energized while someone is working on it." },
+    { level: "fundamentals", topic: "AC supply", q: "A standard general-purpose receptacle in a North American home supplies about...",
+      choices: ["120 V AC", "12 V DC", "240 V DC", "480 V AC"], correct: 0,
+      explanation: "Common branch-circuit receptacles are nominally 120 V alternating current." },
+    { level: "journeyman", topic: "Overcurrent protection", q: "An overcurrent protective device (breaker or fuse) is sized primarily to protect the...",
+      choices: ["Conductor", "Motor windings only", "Electric meter", "Utility transformer"], correct: 0,
+      explanation: "NEC Article 240 requires the overcurrent device to protect the conductor's ampacity so the wiring cannot overheat." },
+    { level: "journeyman", topic: "Ampacity tables", q: "Allowable ampacities for insulated conductors in a raceway are most commonly taken from which NEC table?",
+      choices: ["Table 310.16", "Table 250.122", "Table 220.12", "Table 314.16"], correct: 0,
+      explanation: "NEC Table 310.16 lists conductor ampacities by size, insulation temperature rating, and material." },
+    { level: "journeyman", topic: "Grounding vs. bonding", q: "What does BONDING primarily accomplish?",
+      choices: ["Joins metal parts to form a low-impedance path for fault current", "Connects the system to the earth", "Limits voltage during normal operation", "Sizes the neutral conductor"], correct: 0,
+      explanation: "Bonding ties conductive parts together so fault current has a low-impedance path back to the source; grounding is the connection to earth." },
+    { level: "journeyman", topic: "Neutral identification", q: "The grounded (neutral) conductor of a branch circuit is identified by which color?",
+      choices: ["White or gray", "Green", "Black", "Red"], correct: 0,
+      explanation: "NEC 200.6 requires the grounded conductor to be white or gray; green (or bare) is the equipment grounding conductor." },
+    { level: "journeyman", topic: "Conduit fill", q: "The maximum number of conductors permitted in a conduit is limited by...",
+      choices: ["Conduit fill (percent of cross-sectional area)", "The color of the conductors", "The length of the run", "The breaker handle size"], correct: 0,
+      explanation: "NEC Chapter 9 tables cap raceway fill (e.g., 40% for three or more conductors) so wires can be pulled and heat can dissipate." },
+    { level: "journeyman", topic: "Dwelling load calc", q: "For a dwelling, the general lighting load is calculated at how many volt-amperes per square foot (NEC 220.12)?",
+      choices: ["3 VA/ft²", "1 VA/ft²", "5 VA/ft²", "10 VA/ft²"], correct: 0,
+      explanation: "NEC 220.12 uses 3 VA per square foot of floor area for the general lighting load of a dwelling unit." },
+    { level: "journeyman", topic: "GFCI protection", q: "A GFCI protects people by opening the circuit when it detects...",
+      choices: ["A current difference between the hot and neutral conductors", "A voltage above 120 V", "An overload on the breaker", "A loose neutral only"], correct: 0,
+      explanation: "A GFCI trips on a small imbalance (about 4-6 mA) between the ungrounded and grounded conductors, indicating current leaking to ground." }
+  ];
+
+  // Which PT_BANK levels back a given exam key. Accepts current exam keys
+  // (apprentice/journeyman/master/residential) and legacy stored values
+  // ("fundamentals"/"journeyman"/"mixed") so old saved tests still resolve.
+  function examBankLevels(level) {
+    if (EXAMS[level]) return EXAMS[level].bank;
+    if (level === "fundamentals" || level === "journeyman") return [level];
+    return ["fundamentals", "journeyman"];
+  }
+
+  function localPracticeTest(course, level, count) {
+    var levels = examBankLevels(level);
+    var pool = PT_BANK.filter(function (q) { return levels.indexOf(q.level) !== -1; });
+    if (pool.length < count) pool = PT_BANK.slice();
+    pool = pool.slice();
+    for (var i = pool.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
+    var qs = pool.slice(0, count).map(function (q) {
+      return { q: q.q, choices: q.choices.slice(), correct: q.correct, explanation: q.explanation, topic: q.topic };
+    });
+    return { questions: qs };
+  }
+
+  async function generatePracticeTest(course, level, count) {
+    if (!claudeReady()) return localPracticeTest(course, level, count);
+    var hasMaterials = course.materials.length > 0;
+    var context = course.materials.map(function (m) { return "### " + m.filename + "\n" + m.text; }).join("\n\n");
+    var schema = {
+      type: "object",
+      properties: { questions: { type: "array", items: {
+        type: "object",
+        properties: {
+          question: { type: "string" },
+          choices: { type: "array", items: { type: "string" } },
+          correctIndex: { type: "integer" },
+          explanation: { type: "string" },
+          topic: { type: "string" }
+        },
+        required: ["question", "choices", "correctIndex", "explanation", "topic"], additionalProperties: false
+      } } },
+      required: ["questions"], additionalProperties: false
+    };
+    var levelText = EXAMS[level]
+      ? EXAMS[level].testFocus
+      : "MIX apprentice fundamentals and journeyman-level NEC questions roughly evenly.";
+    var system = examDomain() + "Write a multiple-choice practice EXAM. " + levelText +
+      " Produce exactly " + count + " questions. Each question must have EXACTLY 4 options with exactly one correct answer, and 'correctIndex' must be the 0-based index of the correct option. " +
+      "Make the wrong options plausible (common mistakes or close values). For calculation questions use realistic numbers and put the worked reasoning in 'explanation'. " +
+      "'explanation' is 1-3 sentences on why the answer is correct — cite the formula or the NEC rule/table when relevant. 'topic' is a 2-4 word tag. Vary the topics and never repeat a question. Write each question so it stands alone — never say 'according to the materials'.";
+    var user = hasMaterials
+      ? "STUDY MATERIALS:\n" + context + "\n\nWrite the practice exam, grounded in these materials where relevant and rounded out with standard electrician-exam knowledge."
+      : "STUDY AREA: " + (course.name || "an electrician exam") + "\n\nWrite the practice exam using standard electrician-exam and NEC knowledge.";
+    try {
+      var raw = await callClaude({ system: system, user: user, schema: schema, maxTokens: 8192 });
+      var data = parseJsonLoose(raw) || {};
+      var qs = (data.questions || []).map(function (q) {
+        return { q: String(q.question == null ? "" : q.question).trim(),
+          choices: (q.choices || []).map(function (c) { return String(c); }),
+          correct: q.correctIndex | 0,
+          explanation: String(q.explanation == null ? "" : q.explanation),
+          topic: String(q.topic == null ? "" : q.topic) };
+      }).filter(function (q) { return q.q && q.choices.length === 4 && q.correct >= 0 && q.correct <= 3; });
+      if (!qs.length) throw new Error("empty");
+      return { questions: qs };
+    } catch (e) {
+      // Proxy/CORS/parse failure — fall back to the built-in bank so the student
+      // always gets a working test rather than a dead button.
+      return localPracticeTest(course, level, count);
+    }
+  }
+
+  function ptLevelLabel(l) { return EXAMS[l] ? EXAMS[l].label : (l === "journeyman" ? "Journeyman (NEC)" : l === "fundamentals" ? "Fundamentals" : "Mixed"); }
+
+  function ptControlsHTML(course) {
+    var hist = course.testHistory || [];
+    var best = hist.length ? Math.max.apply(null, hist.map(function (h) { return Math.round(100 * h.score / h.total); })) : 0;
+    var last = hist.length ? hist[hist.length - 1] : null;
+    var stats = hist.length ? '<div class="pt-stats">' +
+        '<div class="pt-stat"><div class="pt-stat-n">' + best + '%</div><div class="pt-stat-l">Best score</div></div>' +
+        '<div class="pt-stat"><div class="pt-stat-n">' + hist.length + '</div><div class="pt-stat-l">Tests taken</div></div>' +
+        '<div class="pt-stat"><div class="pt-stat-n">' + Math.round(100 * last.score / last.total) + '%</div><div class="pt-stat-l">Last score</div></div>' +
+      '</div>' : '';
+    return '<div class="pt-setup"><div class="pt-setup-row">' +
+      '<label class="field-label">Exam<select id="ptLevel">' +
+        EXAM_ORDER.map(function (k) {
+          return '<option value="' + k + '"' + (k === state.exam ? ' selected' : '') + '>' + esc(EXAMS[k].label) + '</option>';
+        }).join("") +
+      '</select></label>' +
+      '<label class="field-label">Questions<select id="ptCount">' +
+        '<option value="5">5</option><option value="10" selected>10</option><option value="15">15</option>' +
+      '</select></label>' +
+      '<button class="btn primary" id="ptGen">' + IC.spark + 'Generate test</button>' +
+      '</div>' + stats + '</div>';
+  }
+
+  function ptQuizHTML(t) {
+    var head = '<div class="pt-head"><div><h3 class="pt-title">Practice test</h3>' +
+      '<div class="pt-meta">' + t.questions.length + ' questions · ' + ptLevelLabel(t.level) + '</div></div>' +
+      '<button class="btn ghost sm" id="ptCancel">Discard</button></div>';
+    var qs = t.questions.map(function (q, i) {
+      var opts = q.choices.map(function (c, ci) {
+        var checked = t.answers["pq" + i] === ci;
+        return '<label class="pt-opt' + (checked ? ' chosen' : '') + '" data-name="pq' + i + '" data-idx="' + ci + '">' +
+          '<input type="radio" name="pq' + i + '" value="' + ci + '"' + (checked ? ' checked' : '') + '>' +
+          '<span class="pt-letter">' + String.fromCharCode(65 + ci) + '</span>' +
+          '<span class="pt-opt-text">' + esc(c) + '</span></label>';
+      }).join("");
+      return '<div class="pt-q"><div class="pt-q-num">Question ' + (i + 1) + '</div>' +
+        '<div class="pt-q-text">' + esc(q.q) + '</div>' +
+        '<div class="pt-opts">' + opts + '</div></div>';
+    }).join("");
+    var answered = Object.keys(t.answers).length;
+    var submit = '<div class="pt-actions"><button class="btn primary" id="ptSubmit">Submit test (' + answered + '/' + t.questions.length + ')</button></div>';
+    return head + qs + submit;
+  }
+
+  function ptResultsHTML(t) {
+    var pct = Math.round(100 * t.score / t.questions.length);
+    var pass = pct >= 70;
+    var banner = '<div class="pt-score ' + (pass ? 'pass' : 'fail') + '">' +
+      '<div class="pt-score-num">' + pct + '%</div>' +
+      '<div class="pt-score-sub">' + t.score + ' / ' + t.questions.length + ' correct · ' + ptLevelLabel(t.level) +
+        (pass ? ' · Passing (70%+)' : ' · Below passing (70%)') + '</div></div>';
+    var qs = t.questions.map(function (q, i) {
+      var chosen = t.answers["pq" + i];
+      var right = chosen === q.correct;
+      var opts = q.choices.map(function (c, ci) {
+        var cls = 'pt-opt result';
+        if (ci === q.correct) cls += ' correct';
+        else if (ci === chosen) cls += ' wrong';
+        var mark = ci === q.correct ? '✓' : (ci === chosen ? '✗' : '');
+        return '<div class="' + cls + '"><span class="pt-letter">' + String.fromCharCode(65 + ci) + '</span>' +
+          '<span class="pt-opt-text">' + esc(c) + '</span><span class="pt-mark">' + mark + '</span></div>';
+      }).join("");
+      var status = (chosen == null) ? '<span class="pt-tag skip">Skipped</span>'
+        : (right ? '<span class="pt-tag ok">Correct</span>' : '<span class="pt-tag no">Incorrect</span>');
+      return '<div class="pt-q ' + (right ? 'is-right' : 'is-wrong') + '">' +
+        '<div class="pt-q-num">Question ' + (i + 1) + ' ' + status + '</div>' +
+        '<div class="pt-q-text">' + esc(q.q) + '</div>' +
+        '<div class="pt-opts">' + opts + '</div>' +
+        '<div class="pt-explain"><strong>Why:</strong> ' + esc(q.explanation || "") +
+          (q.topic ? ' <span class="pt-topic">' + esc(q.topic) + '</span>' : '') + '</div></div>';
+    }).join("");
+    var actions = '<div class="pt-actions"><button class="btn primary" id="ptNew">' + IC.spark + 'New test</button></div>';
+    return '<div class="pt-results">' + banner + qs + actions + '</div>';
+  }
+
+  // Synthetic, persisted "course" backing the top-level Quick test — no
+  // materials, so questions come from general electrician / NEC knowledge.
+  function quickCourse() {
+    if (!state.quick) state.quick = { id: "quick", name: "Quick electrician test", materials: [], test: null, testHistory: [] };
+    if (!state.quick.materials) state.quick.materials = [];
+    if (!state.quick.testHistory) state.quick.testHistory = [];
+    return state.quick;
+  }
+
+  function quickTestPage() {
+    var qc = quickCourse();
+    return '<div class="page-scroll"><div class="page-inner">' +
+      '<div class="page-head"><div>' +
+        '<h1 class="page-title">Quick test</h1>' +
+        '<p class="page-sub">Jump straight into a scored electrician practice exam — no course or class needed. Pick your exam and length and start answering.</p>' +
+      '</div></div>' +
+      '<div class="content">' + renderPracticeTest(qc, true) + '</div>' +
+    '</div></div>';
+  }
+
+  function renderPracticeTest(course, hideLead) {
+    var t = course.test;
+    if (t && !t.submitted) return '<div class="content-inner">' + ptQuizHTML(t) + '</div>';
+    var lead = hideLead ? '' : '<p class="sec-lead">Take a scored multiple-choice practice exam for the electrician test. Pick your exam and length, answer every question, then submit to see your score with an explanation for each one. Uploaded materials make the questions more specific.' +
+      (claudeReady() ? '' : ' <em>(No AI connection right now — using a built-in question bank.)</em>') + '</p>';
+    var results = (t && t.submitted) ? ptResultsHTML(t) : "";
+    return '<div class="content-inner">' + lead + results + ptControlsHTML(course) + '</div>';
+  }
+
+  function wirePracticeTest(course) {
+    var gen = document.getElementById("ptGen");
+    if (gen) gen.onclick = async function () {
+      var level = (document.getElementById("ptLevel") || {}).value || "mixed";
+      var count = parseInt((document.getElementById("ptCount") || {}).value, 10) || 10;
+      var orig = gen.innerHTML; gen.disabled = true; gen.innerHTML = IC.spark + 'Building test…';
+      try {
+        var data = await generatePracticeTest(course, level, count);
+        var qs = (data.questions || []).filter(function (q) { return q.q && q.choices && q.choices.length === 4 && q.correct >= 0 && q.correct <= 3; }).slice(0, count);
+        if (!qs.length) throw new Error("no questions were generated");
+        course.test = { id: uid(), level: level, createdAt: Date.now(), questions: qs, answers: {}, submitted: false };
+        persist(); renderPage();
+      } catch (e) {
+        alert("Couldn't build the test: " + e.message);
+        gen.disabled = false; gen.innerHTML = orig;
+      }
+    };
+
+    Array.prototype.forEach.call(document.querySelectorAll(".pt-opt input"), function (inp) {
+      inp.onchange = function () {
+        if (!course.test) return;
+        course.test.answers[inp.name] = parseInt(inp.value, 10); persist();
+        var sub = document.getElementById("ptSubmit");
+        if (sub) sub.textContent = "Submit test (" + Object.keys(course.test.answers).length + "/" + course.test.questions.length + ")";
+        Array.prototype.forEach.call(document.querySelectorAll('label[data-name="' + inp.name + '"]'), function (l) {
+          l.classList.toggle("chosen", l.getAttribute("data-idx") === inp.value);
+        });
+      };
+    });
+
+    var submit = document.getElementById("ptSubmit");
+    if (submit) submit.onclick = function () {
+      var t = course.test; if (!t) return;
+      var unanswered = t.questions.length - Object.keys(t.answers).length;
+      if (unanswered > 0 && !confirm(unanswered + " question(s) are unanswered and will be marked wrong. Submit anyway?")) return;
+      var score = 0;
+      t.questions.forEach(function (q, i) { if (t.answers["pq" + i] === q.correct) score++; });
+      t.submitted = true; t.score = score; t.at = Date.now();
+      course.testHistory = (course.testHistory || []).concat([{ at: t.at, level: t.level, count: t.questions.length, score: score, total: t.questions.length }]);
+      persist(); renderPage();
+    };
+
+    var cancel = document.getElementById("ptCancel");
+    if (cancel) cancel.onclick = function () { if (confirm("Discard this test?")) { course.test = null; persist(); renderPage(); } };
+    var neu = document.getElementById("ptNew");
+    if (neu) neu.onclick = function () { course.test = null; persist(); renderPage(); };
+  }
+
   // Study-mode toggle shown above a session worksheet: solo self-study vs.
   // studying with a group. Group mode adds facilitation guidance but leaves the
   // worksheet mechanics unchanged. Kept in view state (resets on navigation).
@@ -4974,7 +5154,7 @@
     }
     var badge = "";
     if (leaderMode) badge = '<span class="origin-badge origin-leader">' + IC.school + 'Published to students</span>';
-    else if (opts.origin === "leader") badge = '<span class="origin-badge origin-leader">' + IC.school + 'From your SI leader</span>';
+    else if (opts.origin === "leader") badge = '<span class="origin-badge origin-leader">' + IC.school + 'From your instructor</span>';
     else if (opts.origin === "student") badge = '<span class="origin-badge origin-student">' + IC.cap + 'Your session</span>';
     var editBtn = opts.editable ? '<button class="btn ghost sm" id="editSessionBtn">' + IC.edit + 'Edit session</button>' : "";
     var revealToggle = leaderMode ? "" : '<button class="btn ghost sm" id="answersToggle">' + IC.file + 'Reveal all answers</button>';
@@ -5331,6 +5511,8 @@
     Array.prototype.forEach.call(pageEl.querySelectorAll("[data-nav-btn]"), function (b) {
       b.onclick = function () { navigate({ page: b.getAttribute("data-nav-btn"), activeSession: null }); };
     });
+
+    if (view.page === "quicktest") { wirePracticeTest(quickCourse()); return; }
 
     if (isLeader()) { wireLeaderPage(); return; }
 
@@ -5833,6 +6015,7 @@
     }
 
     if (view.tab === "tutor") wireTutor(course);
+    if (view.tab === "test") wirePracticeTest(course);
   }
 
   // ---------- side nav events ----------
