@@ -456,7 +456,24 @@
     background:transparent; color:var(--accent-solid-fg); cursor:pointer; }
   .ed-add:hover { border-color:var(--accent); }
   .ed-actions { display:flex; gap:10px; margin-top:22px; padding-top:16px; border-top:1px solid var(--border); flex-wrap:wrap; }
+  .ws-edit .ed-rationale { width:100%; font:inherit; font-size:13.5px; line-height:1.5; padding:8px 10px; border-radius:8px;
+    border:1px solid var(--border); background:var(--input-bg,transparent); color:var(--text); resize:vertical; margin-bottom:4px; }
+  .ws-edit .ed-flabel { display:block; font-size:10px; letter-spacing:.05em; text-transform:uppercase; font-weight:700;
+    color:var(--text-muted); margin:14px 0 4px; }
+  .ws-edit .ed-flabel .ed-hint { text-transform:none; letter-spacing:0; font-weight:500; color:var(--text-muted); }
   .ws-score { font-size:12.5px; color:var(--text-muted); font-weight:600; margin-top:9px; }
+  /* "Why this session is built this way" */
+  .why-session { margin-top:16px; border:1px solid var(--border); border-radius:12px; background:var(--surface-2,var(--panel-bg)); }
+  .why-session > summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px;
+    font-size:13px; font-weight:650; color:var(--accent-solid-fg); padding:11px 15px; }
+  .why-session > summary::-webkit-details-marker { display:none; }
+  .why-session > summary .i { width:15px; height:15px; }
+  .why-session[open] > summary { border-bottom:1px solid var(--border); }
+  .why-body { padding:13px 16px 4px; }
+  .why-rationale { font-size:13.5px; line-height:1.55; color:var(--text); margin:0 0 12px; }
+  .why-parts { margin:0 0 12px; padding-left:18px; }
+  .why-parts li { font-size:12.5px; line-height:1.5; color:var(--text-muted); margin-bottom:7px; }
+  .why-parts strong { color:var(--text); }
 
   /* ===== generate-mode toggle (worksheet vs. SI session plan) ===== */
   .gen-mode { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:2px 0 20px; }
@@ -665,6 +682,19 @@
   .ics-drop input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
   .ics-drop .file-status { font-size:12px; color:var(--text-muted); line-height:1.4; }
   .ics-paste { min-height:52px; font-family:ui-monospace,Menlo,monospace; font-size:11.5px; }
+  /* weekly free-time picker */
+  .freegrid-wrap { margin:4px 0 12px; }
+  .fg-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:7px; }
+  .fg-head .field-label { margin:0; }
+  .freegrid { display:grid; grid-template-columns:auto repeat(7, minmax(0,1fr)); gap:4px; }
+  .fg-cell { min-height:0; }
+  .fg-day { font-size:11px; font-weight:700; color:var(--text-muted); text-align:center; padding:2px 0; }
+  .fg-corner { }
+  .fg-rowlabel { font-size:11px; font-weight:600; color:var(--text); display:flex; flex-direction:column; justify-content:center; padding-right:6px; line-height:1.15; }
+  .fg-rowlabel .fg-when { font-size:9.5px; font-weight:400; color:var(--text-muted); }
+  .fg-slot { height:26px; border:1px solid var(--border); border-radius:6px; background:var(--input-bg,transparent); cursor:pointer; padding:0; transition:background .1s, border-color .1s; }
+  .fg-slot:hover { border-color:var(--accent); }
+  .fg-slot.on { background:var(--accent); border-color:var(--accent); }
   .day-guide { margin-top:16px; }
   .day-list { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
   .day-row { border:1px solid var(--border); border-radius:12px; padding:12px 15px; }
@@ -1372,6 +1402,9 @@
     // (typed commitments and/or an imported calendar) it was built from.
     if (c.daySchedule === undefined) c.daySchedule = null;
     if (c.availability === undefined) c.availability = "";
+    // Weekly free-time grid: which day/time blocks the student marked free.
+    // Keyed "dayIdx-rowIdx" (see FREE_DAYS / FREE_ROWS) -> true.
+    if (!c.freeGrid) c.freeGrid = {};
     return c;
   }
   // Older saved contacts predate first/last names, semesters, and provenance.
@@ -1589,6 +1622,7 @@
     var schema = {
       type: "object",
       properties: {
+        rationale: { type: "string" },
         warmUp: { type: "array", items: qa },
         groupProblems: { type: "array", items: {
           type: "object",
@@ -1597,11 +1631,12 @@
         } },
         wrapUpCheck: { type: "array", items: qa }
       },
-      required: ["warmUp", "groupProblems", "wrapUpCheck"], additionalProperties: false
+      required: ["rationale", "warmUp", "groupProblems", "wrapUpCheck"], additionalProperties: false
     };
     var hasMaterials = course.materials.length > 0;
     var filenames = course.materials.map(function (m) { return m.filename; });
     var system = "You design Purdue-style Supplemental Instruction practice sessions: a warm-up recall section, collaborative group problems (each with a facilitation hint), and a wrap-up check. Aim for 3 warm-up questions, 2-3 group problems, and 3 wrap-up checks. " +
+      "Also provide a 'rationale': 2-3 sentences, addressed to the student or SI leader, explaining WHY this particular session is built the way it is — why these warm-ups ease people in, why these group problems were chosen for this topic, and what the wrap-up checks confirm. Make it specific to THIS topic and (if given) the course materials, not a generic description of the SI method. " +
       "For every item, also provide an 'answer': a concise but complete model answer the student can grade themselves against — show the key reasoning or the expected response, not just a yes/no. " +
       "Write every question so it stands on its own: a student should be able to read and answer it without being told where it came from. Do NOT open questions with phrases like \"According to the course schedule,\", \"Based on the syllabus,\", or \"From the course materials\" — state the substance of the question directly. " +
       (hasMaterials
@@ -1694,8 +1729,11 @@
       { q: "Name one thing you'll review before the next class about " + t + ".",
         answer: "Pick the weakest sub-topic within " + t + " and commit to reviewing it." }
     ];
+    var rationale = "This session follows the Purdue SI shape for “" + t + "”: the warm-up gets everyone recalling the core idea before applying it, the " +
+      (hasFacts ? "group problems put " + t + " to work on concrete cases drawn from your materials" : "group problems put " + t + " to work on concrete examples") +
+      ", and the wrap-up check confirms each person can explain it on their own. Add an Anthropic API key for a rationale tailored to your exact materials.";
     return { id: uid(), topic: t, createdAt: Date.now(), grades: {},
-      content: { warmUp: warmUp, groupProblems: groupProblems, wrapUpCheck: wrapUpCheck } };
+      content: { rationale: rationale, warmUp: warmUp, groupProblems: groupProblems, wrapUpCheck: wrapUpCheck } };
   }
   function shorten(s) { s = s.replace(/\s+/g, " ").trim(); return s.length > 140 ? s.slice(0, 137) + "…" : s; }
 
@@ -1944,6 +1982,31 @@
   }
 
   // ---------- day-by-day guide ("where do I find time to study this?") ----------
+  // Weekly free-time grid vocabulary. Columns = days, rows = coarse time blocks
+  // the student taps to mark "I'm free then." Kept as data so the picker, the
+  // stored grid, and the text we hand the scheduler all stay in sync.
+  var FREE_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  var FREE_ROWS = [
+    { label: "Early", when: "6–9am" },
+    { label: "Morning", when: "9am–12pm" },
+    { label: "Midday", when: "12–3pm" },
+    { label: "Afternoon", when: "3–6pm" },
+    { label: "Evening", when: "6–9pm" },
+    { label: "Night", when: "9pm–12am" }
+  ];
+  // Turn a tapped free-time grid into a plain-English line the scheduler can use,
+  // e.g. "Mon: Evening, Night · Wed: Afternoon". Empty grid -> "".
+  function freeGridToText(grid) {
+    grid = grid || {};
+    var lines = [];
+    FREE_DAYS.forEach(function (day, di) {
+      var blocks = [];
+      FREE_ROWS.forEach(function (r, ri) { if (grid[di + "-" + ri]) blocks.push(r.label + " (" + r.when + ")"); });
+      if (blocks.length) lines.push(day + ": " + blocks.join(", "));
+    });
+    return lines.join(" · ");
+  }
+
   // Minimal .ics reader: pull each event's summary + start into a plain-text list
   // the model (or the local fallback) can treat as busy blocks. No OAuth — the
   // student exports their Google Calendar to .ics and pastes/loads it.
@@ -3457,7 +3520,7 @@
     if (view.clSession) active = cl.sessions.find(function (s) { return s.id === view.clSession; }) || active;
     if (active) {
       gate = sessionGateHTML(cl, active);
-      worksheet = renderWorksheet(active, cl, active.grades || {}, { origin: "leader", editable: true });
+      worksheet = renderWorksheet(active, cl, active.grades || {}, { origin: "leader", editable: true, reviewMode: true });
     }
     return '<p class="sec-lead">Generate a Purdue SI-style practice session from a <strong>topic</strong>, from the <strong>files you uploaded</strong>, or from a free-form <strong>request</strong>. Published sessions appear in every student’s Sessions tab for this classroom. Use <strong>Edit session</strong> to fine-tune any question or answer before students see it.</p>' +
       roomSuggestBlock(cl) +
@@ -4814,6 +4877,29 @@
     return '<div class="content-inner">' + lead + noMats + focusBlock + gen + planBody + timeBlock + '</div>';
   }
 
+  // A tappable week grid (days × coarse time blocks). Tapping a cell marks that
+  // block free; the selection is stored on course.freeGrid and folded into the
+  // availability text the scheduler works from. Complements the free-text box —
+  // some students would rather point than type.
+  function freeGridHTML(course) {
+    var grid = course.freeGrid || {};
+    var head = '<div class="fg-cell fg-corner"></div>' +
+      FREE_DAYS.map(function (d) { return '<div class="fg-cell fg-day">' + esc(d) + '</div>'; }).join("");
+    var rows = FREE_ROWS.map(function (r, ri) {
+      var cells = FREE_DAYS.map(function (d, di) {
+        var on = !!grid[di + "-" + ri];
+        return '<button type="button" class="fg-cell fg-slot' + (on ? " on" : "") + '" data-fg="' + di + "-" + ri +
+          '" aria-pressed="' + (on ? "true" : "false") + '" title="' + esc(d + " " + r.when) + '"></button>';
+      }).join("");
+      return '<div class="fg-rowlabel">' + esc(r.label) + '<span class="fg-when">' + esc(r.when) + '</span></div>' + cells;
+    }).join("");
+    var any = Object.keys(grid).some(function (k) { return grid[k]; });
+    return '<div class="freegrid-wrap">' +
+      '<div class="fg-head"><span class="field-label">Tap when you\'re free</span>' +
+        '<button type="button" class="btn ghost sm fg-clear" id="freeGridClear"' + (any ? "" : ' style="display:none"') + '>' + IC.trash + 'Clear grid</button></div>' +
+      '<div class="freegrid" id="freeGrid">' + head + rows + '</div></div>';
+  }
+
   // "Where do I find time to study this?" — the student enters their weekly
   // commitments and/or imports a Google Calendar .ics export, and the plan is
   // laid out day-by-day around their free time.
@@ -4822,9 +4908,10 @@
     var inputs = '<div class="findtime-inputs">' +
       '<label class="field-label" for="availInput">Your weekly commitments &amp; free time</label>' +
       '<textarea id="availInput" placeholder="e.g. Classes Mon/Wed/Fri 9–2, work Tue/Thu evenings, free most nights after 7 and Sunday afternoons.">' + esc(course.availability || "") + '</textarea>' +
-      '<div class="ics-drop">' + IC.calendar + '<input type="file" id="icsFile" accept=".ics,text/calendar" />' +
-        '<span class="file-status" id="icsStatus">Optional: import a Google Calendar export (Calendar → Settings → Import &amp; export → Export) to schedule around real events.</span></div>' +
-      '<textarea id="icsPaste" class="ics-paste" placeholder="…or paste the contents of your .ics file here."></textarea>' +
+      freeGridHTML(course) +
+      '<div class="ics-drop">' + IC.calendar + '<input type="file" id="icsFile" accept=".ics,text/calendar" multiple />' +
+        '<span class="file-status" id="icsStatus">Optional: import one or more Google Calendar exports (Calendar → Settings → Import &amp; export → Export) to schedule around real events. You can pick several .ics files at once.</span></div>' +
+      '<textarea id="icsPaste" class="ics-paste" placeholder="…or paste the contents of your .ics file(s) here."></textarea>' +
       '</div>';
     var body = has
       ? dayScheduleHTML(course.daySchedule)
@@ -5179,7 +5266,9 @@
     var worksheet = "";
     var active = course.sessions[course.sessions.length - 1];
     if (view.activeSession) active = course.sessions.find(function (s) { return s.id === view.activeSession; }) || active;
-    if (active) worksheet = studyModeToggle() + renderWorksheet(active, course);
+    // origin "student" + editable (but NOT reviewMode): the student practices as
+    // usual and can also Edit / add their own questions to their own session.
+    if (active) worksheet = studyModeToggle() + renderWorksheet(active, course, null, { origin: "student", editable: true });
 
     // Suggested topics to pick from: existing course topics plus any AI-fetched
     // suggestions. No uploads required — students can pick one or type their own.
@@ -5228,16 +5317,34 @@
       : 'Reveal each answer, check your work, then grade yourself on each item.';
   }
 
-  // opts: { origin: "leader" | "student", editable: bool }
+  // "Why this session looks like this" — a collapsible block shown to both the
+  // student and the leader. It pairs the session-specific rationale (written by
+  // Claude, or the offline fallback, when the session was generated) with a
+  // fixed explainer of the Purdue SI three-part structure.
+  function whySessionHTML(c) {
+    var rationale = (c && c.rationale) ? '<p class="why-rationale">' + esc(c.rationale) + '</p>' : "";
+    var fixed = '<ul class="why-parts">' +
+      '<li><strong>Warm-up recall</strong> — quick, low-stakes questions that pull the key ideas back into memory before you use them, so everyone starts on the same page.</li>' +
+      '<li><strong>Group problems</strong> — the heart of an SI session: you work harder, applied problems together, with a facilitation hint instead of a straight answer, so the group reasons it out.</li>' +
+      '<li><strong>Wrap-up check</strong> — a short self-test that confirms each person can now explain the idea on their own and surfaces what still needs review.</li>' +
+      '</ul>';
+    return '<details class="why-session"><summary>' + IC.spark + 'Why this session is built this way</summary>' +
+      '<div class="why-body">' + rationale + fixed + '</div></details>';
+  }
+
+  // opts: { origin: "leader" | "student", editable: bool, reviewMode: bool }
   //  - origin drives the "who made this" badge in the worksheet head.
-  //  - editable is true only for a leader looking at their own published
-  //    session; it exposes the Edit button and the inline editor.
+  //  - editable exposes the Edit button and the inline editor (leaders on their
+  //    classroom sessions, and students on their own personal-course sessions).
+  //  - reviewMode is the leader's "check the material" view: all answers shown
+  //    up front, no self-grading. Editable does NOT imply reviewMode.
   function renderWorksheet(s, course, gradesOverride, opts) {
     opts = opts || {};
     if (opts.editable && view.editSession === s.id) return renderSessionEditor(s);
     // A leader reviewing their own session sees every answer up front and never
     // self-grades — they're checking and editing the material, not practicing it.
-    var leaderMode = !!opts.editable;
+    // (A student editing their OWN session keeps the normal practice view.)
+    var leaderMode = !!opts.reviewMode;
     // Solo mode rewrites group-study wording into solo wording for display only
     // (see toSoloText). Never applied in leaderMode — a leader edits the canonical
     // group-voice session, not a student's adapted view.
@@ -5305,6 +5412,7 @@
         '<div class="ws-head"><div class="ws-head-top"><h2>' + esc(s.topic) + '</h2>' + badge + editBtn + revealToggle + '</div>' +
         '<div class="ts">Generated ' + new Date(s.createdAt).toLocaleString() + '</div>' +
         scoreBlock + '</div>' +
+      whySessionHTML(c) +
       (s.plan ? planAgendaHTML(s.plan) : "") +
       '<div class="ws-block"><div class="lbl"><span class="num">1</span>Warm-up recall</div>' + section(c.warmUp, "warmUp", false) + '</div>' +
       '<div class="ws-block"><div class="lbl"><span class="num">2</span>' + (solo ? "Practice problems" : "Group problems") + '</div>' + section(c.groupProblems, "groupProblems", true) + '</div>' +
@@ -5342,6 +5450,8 @@
     return '<div class="ws-edit" id="sessionEditor">' +
       '<label class="ed-flabel">Session topic</label>' +
       '<input type="text" class="ed-topic" id="edTopic" value="' + esc(s.topic) + '" />' +
+      '<label class="ed-flabel">Why this session is built this way <span class="ed-hint">— shown to whoever opens it</span></label>' +
+      '<textarea class="ed-rationale" id="edRationale" rows="3" placeholder="Explain why these warm-ups, group problems, and wrap-up checks were chosen for this topic.">' + esc((c.rationale) || "") + '</textarea>' +
       sections +
       '<div class="ed-actions">' +
         '<button class="btn primary" id="edSave">' + IC.check + 'Save changes</button>' +
@@ -5370,6 +5480,8 @@
     });
     var t = document.getElementById("edTopic");
     if (t && t.value.trim()) s.topic = t.value.trim();
+    var r = document.getElementById("edRationale");
+    if (r) s.content.rationale = r.value.trim();
   }
 
   // Wire the inline session editor. `active` is the session being edited (a
@@ -5907,6 +6019,10 @@
       var ws = document.getElementById("worksheet");
       var activeS = course.sessions[course.sessions.length - 1];
       if (view.activeSession) activeS = course.sessions.find(function (x) { return x.id === view.activeSession; }) || activeS;
+      // Personal-course sessions are editable: wire the Edit button + inline
+      // editor. When editing, renderWorksheet returns the editor (no #worksheet),
+      // so this must run regardless of the grading block below.
+      if (activeS) wireSessionEditor(activeS);
       if (ws && activeS) {
         if (!activeS.grades) activeS.grades = {};
         // Reveal is per-question so grading or revealing one item never exposes the rest.
@@ -6068,27 +6184,62 @@
       // ----- "Where do I find time to study this?" day-by-day guide -----
       var availInput = document.getElementById("availInput");
       if (availInput) availInput.oninput = function () { course.availability = availInput.value; persist(); };
+      // Weekly free-time grid: tap cells to toggle, no full re-render so the
+      // page doesn't jump. Selection lives on course.freeGrid and is persisted.
+      var freeGrid = document.getElementById("freeGrid");
+      var freeGridClear = document.getElementById("freeGridClear");
+      function syncFreeGridClear() {
+        if (!freeGridClear) return;
+        var any = Object.keys(course.freeGrid || {}).some(function (k) { return course.freeGrid[k]; });
+        freeGridClear.style.display = any ? "" : "none";
+      }
+      if (freeGrid) Array.prototype.forEach.call(freeGrid.querySelectorAll(".fg-slot"), function (cell) {
+        cell.onclick = function () {
+          var k = cell.getAttribute("data-fg");
+          if (course.freeGrid[k]) delete course.freeGrid[k]; else course.freeGrid[k] = true;
+          cell.classList.toggle("on", !!course.freeGrid[k]);
+          cell.setAttribute("aria-pressed", course.freeGrid[k] ? "true" : "false");
+          syncFreeGridClear(); persist();
+        };
+      });
+      if (freeGridClear) freeGridClear.onclick = function () { course.freeGrid = {}; persist(); renderPage(); };
+
+      // Multiple .ics files: read them all, merge every event, and drop the
+      // combined text into the paste box the scheduler reads from.
       var icsFile = document.getElementById("icsFile"), icsPaste = document.getElementById("icsPaste"), icsStatus = document.getElementById("icsStatus");
       if (icsFile) icsFile.onchange = function () {
-        var f = icsFile.files[0]; if (!f) return;
-        var reader = new FileReader();
-        reader.onload = function () {
-          if (icsPaste) icsPaste.value = reader.result || "";
-          var n = parseIcsBusy(reader.result).length;
-          if (icsStatus) icsStatus.textContent = n ? ("✓ Loaded " + f.name + " — " + n + " event" + (n === 1 ? "" : "s") + " found.") : ("Loaded " + f.name + ", but no events were found in it.");
-        };
-        reader.readAsText(f);
+        var files = Array.prototype.slice.call(icsFile.files || []); if (!files.length) return;
+        if (icsStatus) icsStatus.textContent = "Reading " + files.length + " file" + (files.length === 1 ? "" : "s") + "…";
+        var texts = new Array(files.length), done = 0;
+        files.forEach(function (f, i) {
+          var reader = new FileReader();
+          reader.onload = function () {
+            texts[i] = reader.result || "";
+            if (++done === files.length) {
+              var merged = texts.join("\n");
+              if (icsPaste) icsPaste.value = merged;
+              var n = parseIcsBusy(merged).length;
+              if (icsStatus) icsStatus.textContent = n
+                ? ("✓ Loaded " + files.length + " file" + (files.length === 1 ? "" : "s") + " — " + n + " event" + (n === 1 ? "" : "s") + " found.")
+                : ("Loaded " + files.length + " file" + (files.length === 1 ? "" : "s") + ", but no events were found.");
+            }
+          };
+          reader.readAsText(f);
+        });
       };
       var findTimeBtn = document.getElementById("findTimeBtn");
       if (findTimeBtn) findTimeBtn.onclick = async function () {
         var avail = availInput ? availInput.value.trim() : (course.availability || "");
         var ics = icsPaste ? icsPaste.value.trim() : "";
-        if (!avail && !ics) { alert("Add your weekly availability (or import a calendar) first, so there's a schedule to work around."); if (availInput) availInput.focus(); return; }
+        var gridText = freeGridToText(course.freeGrid);
+        if (!avail && !ics && !gridText) { alert("Add your weekly availability — type it, tap the free-time grid, or import a calendar — so there's a schedule to work around."); if (availInput) availInput.focus(); return; }
         course.availability = avail; persist();
+        // Hand the scheduler the typed text and the tapped grid together.
+        var availForGen = [avail, gridText ? "Free-time grid — " + gridText : ""].filter(Boolean).join("\n");
         var orig = findTimeBtn.innerHTML;
         findTimeBtn.disabled = true; findTimeBtn.innerHTML = IC.spark + 'Finding time…';
         try {
-          course.daySchedule = await generateDayByDay(course, avail, ics);
+          course.daySchedule = await generateDayByDay(course, availForGen, ics);
           persist(); renderPage();
         } catch (e) {
           alert("Couldn't build a day-by-day guide: " + e.message);

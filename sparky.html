@@ -462,7 +462,71 @@
     background:transparent; color:var(--accent-solid-fg); cursor:pointer; }
   .ed-add:hover { border-color:var(--accent); }
   .ed-actions { display:flex; gap:10px; margin-top:22px; padding-top:16px; border-top:1px solid var(--border); flex-wrap:wrap; }
+  .ws-edit .ed-rationale { width:100%; font:inherit; font-size:13.5px; line-height:1.5; padding:8px 10px; border-radius:8px;
+    border:1px solid var(--border); background:var(--input-bg,transparent); color:var(--text); resize:vertical; margin-bottom:4px; }
+  .ws-edit .ed-flabel { display:block; font-size:10px; letter-spacing:.05em; text-transform:uppercase; font-weight:700;
+    color:var(--text-muted); margin:14px 0 4px; }
+  .ws-edit .ed-flabel .ed-hint { text-transform:none; letter-spacing:0; font-weight:500; color:var(--text-muted); }
   .ws-score { font-size:12.5px; color:var(--text-muted); font-weight:600; margin-top:9px; }
+  /* "Why this session is built this way" */
+  .why-session { margin-top:16px; border:1px solid var(--border); border-radius:12px; background:var(--surface-2,var(--panel-bg)); }
+  .why-session > summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px;
+    font-size:13px; font-weight:650; color:var(--accent-solid-fg); padding:11px 15px; }
+  .why-session > summary::-webkit-details-marker { display:none; }
+  .why-session > summary .i { width:15px; height:15px; }
+  .why-session[open] > summary { border-bottom:1px solid var(--border); }
+  .why-body { padding:13px 16px 4px; }
+  .why-rationale { font-size:13.5px; line-height:1.55; color:var(--text); margin:0 0 12px; }
+  .why-parts { margin:0 0 12px; padding-left:18px; }
+  .why-parts li { font-size:12.5px; line-height:1.5; color:var(--text-muted); margin-bottom:7px; }
+  .why-parts strong { color:var(--text); }
+  /* new-test form + overview fields */
+  .nc-select { width:100%; font:inherit; font-size:14px; padding:9px 11px; border-radius:9px;
+    border:1px solid var(--border); background:var(--input-bg,transparent); color:var(--text); }
+  .nc-row { display:flex; gap:14px; margin-top:18px; }
+  .nc-col { flex:1; min-width:0; }
+  .nc-target { position:relative; }
+  .nc-target .nc-pct { position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:13px; pointer-events:none; }
+  /* ---------- Test overview ---------- */
+  .ov-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .ov-card { border:1px solid var(--border); border-radius:14px; padding:16px 18px; background:var(--surface-2,var(--panel-bg)); }
+  .ov-wide { grid-column:1 / -1; }
+  .ov-card-lbl { font-size:11px; letter-spacing:.07em; text-transform:uppercase; font-weight:700; color:var(--text-muted); margin-bottom:10px; }
+  .ov-count { font-size:44px; font-weight:800; line-height:1; color:var(--text); display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+  .ov-count-unit { font-size:15px; font-weight:600; color:var(--text-muted); }
+  .ov-count-set { font-size:30px; }
+  .ov-count-sub { margin-top:10px; font-size:13px; color:var(--text-muted); }
+  .ready-num { font-size:30px; font-weight:800; line-height:1; }
+  .ready-num .ready-of { font-size:13px; font-weight:600; color:var(--text-muted); }
+  .ready-bar { position:relative; height:12px; border-radius:999px; background:var(--border); margin:12px 0 10px; overflow:visible; }
+  .ready-fill { height:100%; border-radius:999px; }
+  .ready-mark { position:absolute; top:-3px; width:2px; height:18px; background:var(--text); border-radius:2px; opacity:.75; }
+  .ready-foot { display:flex; align-items:center; gap:10px; }
+  .ready-note { font-size:12px; color:var(--text-muted); }
+  .ready-empty { font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:12px; }
+  .ready-pill { font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; border:1px solid; }
+  .r-good { color:#1a8a4a; } .ready-fill.r-good { background:#22a95c; } .ready-pill.r-good { color:#1a8a4a; border-color:#22a95c; background:rgba(34,169,92,.12); }
+  .r-warn { color:#b9791b; } .ready-fill.r-warn { background:#e0982a; } .ready-pill.r-warn { color:#b9791b; border-color:#e0982a; background:rgba(224,152,42,.12); }
+  .r-bad { color:#c0442e; } .ready-fill.r-bad { background:#d85a30; } .ready-pill.r-bad { color:#c0442e; border-color:#d85a30; background:rgba(216,90,48,.12); }
+  .ov-focus { display:flex; flex-wrap:wrap; align-items:center; gap:7px; margin-bottom:10px; }
+  .ov-focus-lbl { font-size:12.5px; font-weight:600; color:var(--text-muted); }
+  .ov-focus-empty { font-size:13px; color:var(--text-muted); }
+  .ov-next-line { display:flex; align-items:center; gap:7px; font-size:13px; color:var(--text); margin-bottom:14px; }
+  .ov-next-line .i { width:15px; height:15px; color:#22a95c; }
+  .ov-next-todo { color:var(--text-muted); } .ov-next-todo .i { color:var(--accent-solid-fg); }
+  .ov-actions { display:flex; flex-wrap:wrap; gap:8px; }
+  .ov-set-grid { display:flex; gap:14px; flex-wrap:wrap; }
+  .ov-set-grid .nc-col { min-width:150px; }
+  .ov-set-actions { display:flex; align-items:center; gap:10px; margin-top:14px; }
+  .ov-set-saved { font-size:12px; color:#1a8a4a; }
+  .ov-set-scope { font-size:12px; color:var(--text-muted); line-height:1.5; margin:12px 0 0; }
+  @media (max-width:720px){ .ov-grid { grid-template-columns:1fr; } .nc-row { flex-direction:column; } }
+  /* diagnostic weak-areas card in practice-test results */
+  .pt-weak { border:1px solid var(--accent-solid-fg); border-radius:12px; padding:14px 16px; margin:14px 0 4px; background:var(--accent-soft-bg); }
+  .pt-weak-head { display:flex; align-items:center; gap:7px; font-size:13px; font-weight:700; color:var(--accent-soft-fg); margin-bottom:10px; }
+  .pt-weak-head .i { width:15px; height:15px; }
+  .pt-weak-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .pt-weak-note { font-size:12px; color:var(--text-muted); margin-left:10px; }
 
   /* ===== generate-mode toggle (worksheet vs. study session plan) ===== */
   .gen-mode { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:2px 0 20px; }
@@ -621,6 +685,19 @@
   .ics-drop input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
   .ics-drop .file-status { font-size:12px; color:var(--text-muted); line-height:1.4; }
   .ics-paste { min-height:52px; font-family:ui-monospace,Menlo,monospace; font-size:11.5px; }
+  /* weekly free-time picker */
+  .freegrid-wrap { margin:4px 0 12px; }
+  .fg-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:7px; }
+  .fg-head .field-label { margin:0; }
+  .freegrid { display:grid; grid-template-columns:auto repeat(7, minmax(0,1fr)); gap:4px; }
+  .fg-cell { min-height:0; }
+  .fg-day { font-size:11px; font-weight:700; color:var(--text-muted); text-align:center; padding:2px 0; }
+  .fg-corner { }
+  .fg-rowlabel { font-size:11px; font-weight:600; color:var(--text); display:flex; flex-direction:column; justify-content:center; padding-right:6px; line-height:1.15; }
+  .fg-rowlabel .fg-when { font-size:9.5px; font-weight:400; color:var(--text-muted); }
+  .fg-slot { height:26px; border:1px solid var(--border); border-radius:6px; background:var(--input-bg,transparent); cursor:pointer; padding:0; transition:background .1s, border-color .1s; }
+  .fg-slot:hover { border-color:var(--accent); }
+  .fg-slot.on { background:var(--accent); border-color:var(--accent); }
   .day-guide { margin-top:16px; }
   .day-list { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
   .day-row { border:1px solid var(--border); border-radius:12px; padding:12px 15px; }
@@ -1285,15 +1362,15 @@
     else localStorage.removeItem(SKEY);
   }
   function signIn(role, name) {
-    var clean = String(name || "").trim() || (role === "leader" ? "Instructor" : "Student");
-    // A stable id derived from role + name so signing back in as the same
-    // person restores their classrooms, membership, and self-grades (there's
-    // no server — this is how identity survives a sign-out in one browser).
-    session = { id: role + ":" + clean.toLowerCase(), role: role, name: clean };
+    // Sparky is a solo test-prep app: everyone is a "student" studying for their
+    // own tests. (The role arg is kept for signature compatibility but ignored.)
+    var clean = String(name || "").trim() || "Student";
+    session = { id: "student:" + clean.toLowerCase(), role: "student", name: clean };
     saveSession(); updateShell();
   }
   function signOut() { session = null; saveSession(); updateShell(); }
-  function isLeader() { return session && session.role === "leader"; }
+  // The instructor/classroom model was removed — Sparky is individual study only.
+  function isLeader() { return false; }
 
   // ---------- state ----------
   var state = load();
@@ -1357,6 +1434,14 @@
     if (!c.contacts) c.contacts = [];
     c.contacts.forEach(backfillContact);
     if (c.studyPlan === undefined) c.studyPlan = null;
+    // ---- Test target: what exam this is for and when/how well they need to do.
+    // `exam` is one of EXAM_ORDER; falls back to the old global state.exam or
+    // journeyman. `testDate` is an ISO yyyy-mm-dd string (or ""). `targetScore`
+    // is the % they need to hit (default 70). These drive the countdown plan,
+    // the readiness meter, and every AI prompt for this test (via currentExam).
+    if (!c.exam) c.exam = (typeof state !== "undefined" && state.exam) || "journeyman";
+    if (c.testDate === undefined) c.testDate = "";
+    if (c.targetScore === undefined || c.targetScore === null) c.targetScore = 70;
     // Up to 3 topics the student says they struggle with most; the study plan
     // is built to focus extra time and practice on these.
     if (!c.planFocus) c.planFocus = [];
@@ -1367,6 +1452,9 @@
     // (typed commitments and/or an imported calendar) it was built from.
     if (c.daySchedule === undefined) c.daySchedule = null;
     if (c.availability === undefined) c.availability = "";
+    // Weekly free-time grid: which day/time blocks the student marked free.
+    // Keyed "dayIdx-rowIdx" (see FREE_DAYS / FREE_ROWS) -> true.
+    if (!c.freeGrid) c.freeGrid = {};
     return c;
   }
   // Older saved contacts predate first/last names, semesters, and provenance.
@@ -1561,7 +1649,13 @@
   };
   var EXAM_ORDER = ["apprentice", "journeyman", "master", "residential"];
 
-  function currentExam() { return EXAMS[state.exam] || EXAMS.journeyman; }
+  // The exam in force right now: the test being viewed carries its own exam;
+  // off a test page (e.g. the standalone Quick test) fall back to state.exam.
+  function currentExam() {
+    var c = (typeof currentCourse === "function") ? currentCourse() : null;
+    var key = (c && c.exam) || state.exam;
+    return EXAMS[key] || EXAMS.journeyman;
+  }
   // The system-prompt preamble for the exam the student is currently studying
   // for. Callers prepend this to their task-specific instructions.
   function examDomain() { return EXAM_BASE + currentExam().scope + EXAM_TAIL; }
@@ -1624,6 +1718,7 @@
     var schema = {
       type: "object",
       properties: {
+        rationale: { type: "string" },
         warmUp: { type: "array", items: qa },
         groupProblems: { type: "array", items: {
           type: "object",
@@ -1632,11 +1727,12 @@
         } },
         wrapUpCheck: { type: "array", items: qa }
       },
-      required: ["warmUp", "groupProblems", "wrapUpCheck"], additionalProperties: false
+      required: ["rationale", "warmUp", "groupProblems", "wrapUpCheck"], additionalProperties: false
     };
     var hasMaterials = course.materials.length > 0;
     var filenames = course.materials.map(function (m) { return m.filename; });
     var system = examDomain() + "Design an electrician study session: a warm-up recall section, hands-on practice problems (each with a coaching hint), and a wrap-up check. Aim for 3 warm-up questions, 2-3 practice problems, and 3 wrap-up checks. " +
+      "Also provide a 'rationale': 2-3 sentences, addressed to the student, explaining WHY this particular session is built the way it is — why these warm-ups ease people in, why these practice problems were chosen for this topic, and what the wrap-up checks confirm. Make it specific to THIS topic and (if given) the course materials, not a generic description of the method. " +
       "For every item, also provide an 'answer': a concise but complete model answer the student can grade themselves against — show the key reasoning or the expected response, not just a yes/no. " +
       "Write every question so it stands on its own: a student should be able to read and answer it without being told where it came from. Do NOT open questions with phrases like \"According to the course schedule,\", \"Based on the syllabus,\", or \"From the course materials\" — state the substance of the question directly. " +
       (hasMaterials
@@ -1729,8 +1825,11 @@
       { q: "Name one thing you'll review before the next class about " + t + ".",
         answer: "Pick the weakest sub-topic within " + t + " and commit to reviewing it." }
     ];
+    var rationale = "This session works “" + t + "” in three passes: the warm-up gets you recalling the core idea before you apply it, the " +
+      (hasFacts ? "practice problems put " + t + " to work on concrete cases drawn from your materials" : "practice problems put " + t + " to work on concrete examples") +
+      ", and the wrap-up check confirms you can explain it on your own. Add an Anthropic API key for a rationale tailored to your exact materials.";
     return { id: uid(), topic: t, createdAt: Date.now(), grades: {},
-      content: { warmUp: warmUp, groupProblems: groupProblems, wrapUpCheck: wrapUpCheck } };
+      content: { rationale: rationale, warmUp: warmUp, groupProblems: groupProblems, wrapUpCheck: wrapUpCheck } };
   }
   function shorten(s) { s = s.replace(/\s+/g, " ").trim(); return s.length > 140 ? s.slice(0, 137) + "…" : s; }
 
@@ -1938,11 +2037,20 @@
     var focusSystem = focus.length
       ? " The student has told you the 2-3 topics they struggle with most: " + focus.join(", ") + ". Build the plan AROUND these — give them more units (or dedicate whole units to them), schedule them earlier and revisit them, and weight the study actions toward extra review and practice on exactly these topics. Still cover the rest of the course, but more briefly. In the summary, say plainly that the plan is focused on these struggle topics."
       : "";
-    var system = examDomain() + "Build a concrete study plan for this electrician exam area, drawing on BOTH their uploaded materials — especially any syllabus, schedule, or list of exam dates — AND the web. Use web search to fill in the course's real topics when the materials are thin, but NEVER invent dates: dates and deadlines must come from the student's own materials. Break the term into ordered units (use the syllabus's own weeks/units and dates when present; otherwise group by topic). For each unit give: a label, a 'when' (a date range or week if the materials state one, else \"\"), the topics it covers, and 2-4 specific study actions (what to review, practice, or do to prepare). Add a few short overall study tips, calling out any exams or major deadlines you find. Ground the schedule in the materials; you may enrich the topic coverage from the web." + focusSystem;
+    // When the student set a real test date, the plan should count down to it:
+    // pace the units across the days remaining and load review toward the end.
+    var days = daysUntil(course.testDate);
+    var dateSystem = (days !== null && days >= 0)
+      ? " The student's TEST DATE is " + fmtDate(course.testDate) + " — about " + days + " day" + (days === 1 ? "" : "s") + " away. Pace the units to fit that window: phrase each unit's 'when' as a step in the countdown (e.g. \"" + (days > 14 ? "Weeks out" : "This week") + "\", \"The week before\", \"Final days\"), front-load learning and push cumulative review and full practice exams toward the last stretch, and make sure every topic is covered before the test date. Aim to have them comfortably at or above their target score by then."
+      : "";
+    var system = examDomain() + "Build a concrete study plan for this electrician exam area, drawing on BOTH their uploaded materials — especially any syllabus, schedule, or list of exam dates — AND the web. Use web search to fill in the course's real topics when the materials are thin, but NEVER invent dates: dates and deadlines must come from the student's own materials or the test date given below. Break the run-up into ordered units. For each unit give: a label, a 'when' (a date range, week, or countdown step; else \"\"), the topics it covers, and 2-4 specific study actions (what to review, practice, or do to prepare). Add a few short overall study tips, calling out the test date and any major deadlines. Ground the schedule in the materials; you may enrich the topic coverage from the web." + dateSystem + focusSystem;
     var user = "EXAM AREA: " + (course.name || "an electrician exam") +
-      (context ? "\n\nSTUDY MATERIALS:\n" + context : "\n\n(No materials uploaded — use typical electrician-exam / NEC topics for this area, but leave dates blank.)") +
+      "\nEXAM TYPE: " + ((EXAMS[course.exam] || {}).label || "Electrician exam") +
+      (course.testDate ? "\nTEST DATE: " + fmtDate(course.testDate) + (days !== null ? " (" + days + " days away)" : "") : "") +
+      "\nTARGET SCORE: " + (course.targetScore || 70) + "%" +
+      (context ? "\n\nSTUDY MATERIALS:\n" + context : "\n\n(No materials uploaded — use typical electrician-exam / NEC topics for this area.)") +
       (focus.length ? "\n\nTOPICS THE STUDENT STRUGGLES WITH MOST (focus the plan on these): " + focus.join(", ") : "") +
-      "\n\nBuild a study plan for this course" + (focus.length ? ", focusing extra time and practice on the struggle topics." : ".");
+      "\n\nBuild a study plan for this test" + (focus.length ? ", focusing extra time and practice on the struggle topics." : ".");
     var raw = await callClaude({ system: system, user: user, schema: schema, tools: webSearchTools(3), maxTokens: 4096 });
     var parsed = parseJsonLoose(raw);
     // If the model's reply didn't parse into a usable plan, fall back to the
@@ -2011,6 +2119,51 @@
   }
 
   // ---------- day-by-day guide ("where do I find time to study this?") ----------
+  // Weekly free-time grid vocabulary. Columns = days, rows = coarse time blocks
+  // the student taps to mark "I'm free then." Kept as data so the picker, the
+  // stored grid, and the text we hand the scheduler all stay in sync.
+  var FREE_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  var FREE_ROWS = [
+    { label: "Early", when: "6–9am" },
+    { label: "Morning", when: "9am–12pm" },
+    { label: "Midday", when: "12–3pm" },
+    { label: "Afternoon", when: "3–6pm" },
+    { label: "Evening", when: "6–9pm" },
+    { label: "Night", when: "9pm–12am" }
+  ];
+  // Whole days from today (local) until an ISO yyyy-mm-dd date. null if unset/bad.
+  // Negative once the date is in the past; 0 on the day itself.
+  function daysUntil(iso) {
+    if (!iso) return null;
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso); if (!m) return null;
+    var target = new Date(+m[1], +m[2] - 1, +m[3]);
+    var now = new Date(); var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return Math.round((target - today) / 86400000);
+  }
+  // Friendly countdown label for a test date. "" when no date is set.
+  function countdownLabel(iso) {
+    var d = daysUntil(iso);
+    if (d === null) return "";
+    if (d > 1) return d + " days until your test";
+    if (d === 1) return "1 day until your test";
+    if (d === 0) return "Your test is today";
+    if (d === -1) return "Test date was yesterday";
+    return "Test date was " + (-d) + " days ago";
+  }
+
+  // Turn a tapped free-time grid into a plain-English line the scheduler can use,
+  // e.g. "Mon: Evening, Night · Wed: Afternoon". Empty grid -> "".
+  function freeGridToText(grid) {
+    grid = grid || {};
+    var lines = [];
+    FREE_DAYS.forEach(function (day, di) {
+      var blocks = [];
+      FREE_ROWS.forEach(function (r, ri) { if (grid[di + "-" + ri]) blocks.push(r.label + " (" + r.when + ")"); });
+      if (blocks.length) lines.push(day + ": " + blocks.join(", "));
+    });
+    return lines.join(" · ");
+  }
+
   // Minimal .ics reader: pull each event's summary + start into a plain-text list
   // the model (or the local fallback) can treat as busy blocks. No OAuth — the
   // student exports their Google Calendar to .ics and pastes/loads it.
@@ -2061,10 +2214,19 @@
       required: ["summary", "days", "tips"], additionalProperties: false
     };
     var today = new Date();
+    // If a test date is set, schedule right up to it (capped so the window stays
+    // usable) and put full practice exams + review in the final days.
+    var days = daysUntil(course.testDate);
+    var horizon = (days !== null && days >= 0) ? Math.max(1, Math.min(days, 21)) : 14;
+    var dateSystem = (days !== null && days >= 0)
+      ? "The student's TEST is on " + fmtDate(course.testDate) + " — " + days + " day" + (days === 1 ? "" : "s") + " away. Schedule from today up to the test date (cover about the next " + horizon + " days), building intensity toward it: put full timed practice exams and cumulative review in the last few days, and a lighter confidence review the day before. "
+      : "Work forward from today for about 10–14 days. ";
     var system = "You are a study coach turning a study plan into a concrete DAY-BY-DAY schedule that fits into the time the student actually has free. " +
-      "Work forward from today for about 10–14 days. For each day give a label (e.g. \"Mon\") and a 'when' (an actual date like \"" + today.toLocaleDateString() + "\" onward). Inside each day, add one or more study blocks with a 'time' (a realistic slot that AVOIDS the student's stated commitments and busy calendar events), a 'focus' (the topic/unit from the study plan), and 'what' (a specific action — read, practice problems, self-quiz). " +
-      "Spread the plan's units sensibly, do heavier review before any exam/test dates found in the materials, keep sessions short (30–90 min) with breaks, and don't schedule study on top of the student's busy blocks. If the student gave little availability, assume typical evenings/weekends but say so. Add a few short tips.";
-    var user = "COURSE: " + (course.name || "a course") +
+      dateSystem +
+      "For each day give a label (e.g. \"Mon\") and a 'when' (an actual date like \"" + today.toLocaleDateString() + "\" onward). Inside each day, add one or more study blocks with a 'time' (a realistic slot that AVOIDS the student's stated commitments and busy calendar events), a 'focus' (the topic/unit from the study plan), and 'what' (a specific action — read, practice problems, self-quiz). " +
+      "Spread the plan's units sensibly, keep sessions short (30–90 min) with breaks, and don't schedule study on top of the student's busy blocks. If the student gave little availability, assume typical evenings/weekends but say so. Add a few short tips.";
+    var user = "TEST: " + (course.name || "a course") + " — " + ((EXAMS[course.exam] || {}).label || "electrician exam") +
+      (course.testDate ? "\nTEST DATE: " + fmtDate(course.testDate) + (days !== null ? " (" + days + " days away)" : "") : "") +
       (planText ? "\n\nSTUDY PLAN:\n" + planText : "") +
       (availabilityText ? "\n\nSTUDENT'S WEEKLY COMMITMENTS / FREE TIME (in their words):\n" + availabilityText : "") +
       (busy.length ? "\n\nBUSY CALENDAR EVENTS (from their imported calendar — do NOT schedule study over these):\n" + busy.join("\n") : "") +
@@ -2885,9 +3047,8 @@
     }
     authEl.style.display = "none";
     appEl.style.display = "";
-    // Keep the active page valid for the signed-in role.
-    if (isLeader()) { if (["courses", "new", "course", "classrooms", "classroom"].indexOf(view.page) !== -1) view.page = "home"; }
-    else if (["home", "lnew", "lclass"].indexOf(view.page) !== -1) view.page = "courses";
+    // Legacy classroom/leader pages no longer exist — bounce them to the tests list.
+    if (["home", "lnew", "lclass", "classrooms", "classroom"].indexOf(view.page) !== -1) view.page = "courses";
     render();
   }
 
@@ -2906,47 +3067,19 @@
   }
   function renderNav() {
     if (!session) return;
-    var navItems, label, list;
-    if (isLeader()) {
-      navItems = navItem("home", IC.school, "Classrooms") + navItem("lnew", IC.plus, "New classroom") +
-        navItem("quicktest", IC.spark, "Quick test");
-      label = "Your classrooms";
-      var owned = ownedClassrooms();
-      list = owned.length ? owned.map(function (c) {
-        return railRow(c.id, "data-room", classroomColor(c), c.name, view.page === "lclass" && c.id === view.classroomId);
-      }).join("") : '<div class="rail-empty">No classrooms yet.</div>';
-    } else {
-      navItems = navItem("quicktest", IC.spark, "Quick test") + navItem("courses", IC.grid, "Courses") +
-        navItem("classrooms", IC.school, "Join a class") + navItem("new", IC.plus, "New course");
-      label = "Your classrooms";
-      var joined = joinedClassrooms();
-      var clRows = joined.length ? joined.map(function (c) {
-        return railRow(c.id, "data-room-student", classroomColor(c), c.name, view.page === "classroom" && c.id === view.classroomId);
-      }).join("") : '<div class="rail-empty">No classrooms joined.</div>';
-      var courseRows = state.courses.length ? state.courses.map(function (c) {
-        return railRow(c.id, "data-id", courseColor(c), c.name, view.page === "course" && c.id === view.courseId);
-      }).join("") : '<div class="rail-empty">No courses yet.</div>';
-      list = clRows + '<div class="nav-label rail-subhead">Your courses</div>' + courseRows;
-    }
-    // Global "which exam am I studying for" picker. Drives every AI prompt via
-    // examDomain() and the default exam on new practice tests.
-    var examPicker = '<div class="exam-pick">' +
-      '<label class="nav-label" for="examSelect">Studying for</label>' +
-      '<select id="examSelect" class="exam-select">' +
-      EXAM_ORDER.map(function (k) {
-        return '<option value="' + k + '"' + (k === state.exam ? ' selected' : '') + '>' + esc(EXAMS[k].label) + '</option>';
-      }).join("") + '</select></div>';
-    primaryNav.innerHTML = navItems + examPicker;
-    railListLabel.textContent = label;
-    courseList.innerHTML = list;
-
-    var examSel = document.getElementById("examSelect");
-    if (examSel) examSel.onchange = function () { state.exam = examSel.value; persist(); render(); };
+    var navItems = navItem("quicktest", IC.spark, "Quick test") + navItem("courses", IC.grid, "Tests") +
+      navItem("new", IC.plus, "New test");
+    var courseRows = state.courses.length ? state.courses.map(function (c) {
+      return railRow(c.id, "data-id", courseColor(c), c.name, view.page === "course" && c.id === view.courseId);
+    }).join("") : '<div class="rail-empty">No tests yet.</div>';
+    primaryNav.innerHTML = navItems;
+    railListLabel.textContent = "Your tests";
+    courseList.innerHTML = courseRows;
 
     var initials = (session.name || "?").trim().split(/\s+/).map(function (w) { return w ? w[0] : ""; }).slice(0, 2).join("").toUpperCase() || "?";
     userBlock.innerHTML =
       '<div class="av">' + esc(initials) + '</div>' +
-      '<div class="who">' + esc(session.name) + '<small>' + (isLeader() ? "Instructor" : "Student") + '</small></div>' +
+      '<div class="who">' + esc(session.name) + '<small>Studying</small></div>' +
       '<button class="signout" id="signOutBtn" title="Sign out" aria-label="Sign out">' + IC.logout + '</button>';
     var so = document.getElementById("signOutBtn");
     if (so) so.onclick = function () { if (confirm("Sign out of Sparky?")) signOut(); };
@@ -2954,23 +3087,12 @@
 
   // ---------- page router ----------
   function renderPage() {
-    // Quick test is a top-level, course-free practice exam available to any role.
+    // Quick test is a top-level, test-free practice exam.
     if (view.page === "quicktest") {
       pageEl.innerHTML = quickTestPage(); wirePage(); typesetMath(pageEl); return;
     }
-    if (isLeader()) {
-      if (view.page === "lnew") pageEl.innerHTML = newClassroomPage();
-      else if (view.page === "lclass" && currentClassroom()) pageEl.innerHTML = leaderClassroomPage(currentClassroom());
-      else { view.page = "home"; pageEl.innerHTML = leaderHomePage(); }
-      wirePage();
-      typesetMath(pageEl);
-      return;
-    }
     if (view.page === "new") pageEl.innerHTML = newCoursePage();
     else if (view.page === "course" && currentCourse()) pageEl.innerHTML = detailPage(currentCourse());
-    else if (view.page === "classrooms") pageEl.innerHTML = studentClassroomsPage();
-    else if (view.page === "classroom" && currentClassroom() && isMember(currentClassroom()))
-      pageEl.innerHTML = studentClassroomPage(currentClassroom());
     else { view.page = "courses"; pageEl.innerHTML = coursesPage(); }
     wirePage();
     typesetMath(pageEl);
@@ -2981,35 +3103,18 @@
   // ============================================================
   var authRole = "student", authName = "";
   function authScreen() {
-    var r = authRole;
     return '<div class="auth-card">' +
       '<div class="auth-brand"><div class="mark">' + IC.spark + '</div><div class="name">Sparky</div></div>' +
-      '<h1>Sign in</h1><p class="sub">Choose how you’re using Sparky. You can switch anytime by signing out.</p>' +
-      '<div class="role-row">' +
-        '<button class="role-opt ' + (r === "student" ? "on" : "") + '" data-role="student">' +
-          '<span class="ri">' + IC.cap + '</span><span class="rt">Student</span>' +
-          '<span class="rd">Study your courses and join your instructor’s classroom.</span></button>' +
-        '<button class="role-opt ' + (r === "leader" ? "on" : "") + '" data-role="leader">' +
-          '<span class="ri">' + IC.school + '</span><span class="rt">Instructor</span>' +
-          '<span class="rd">Run a classroom: share files, manage your roster, build sessions.</span></button>' +
-      '</div>' +
+      '<h1>Get started</h1><p class="sub">Sparky helps you prepare for a specific electrician exam — set your test date and goal, and it builds your study path.</p>' +
       '<label class="field-label" for="authName">Your name</label>' +
-      '<input type="text" id="authName" placeholder="' + (r === "leader" ? "e.g. Gillian B." : "e.g. Alex Chen") + '" value="' + esc(authName) + '" />' +
-      '<div class="auth-actions"><button class="btn primary" id="authGo">Continue as ' + (r === "leader" ? "Instructor" : "Student") + '</button></div>' +
+      '<input type="text" id="authName" placeholder="e.g. Alex Chen" value="' + esc(authName) + '" />' +
+      '<div class="auth-actions"><button class="btn primary" id="authGo">Start studying</button></div>' +
       '<div class="auth-foot">Everything stays in this browser — no account needed.</div>' +
     '</div>';
   }
   function wireAuth() {
-    Array.prototype.forEach.call(authEl.querySelectorAll("[data-role]"), function (b) {
-      b.onclick = function () {
-        var ne = document.getElementById("authName"); if (ne) authName = ne.value;
-        authRole = b.getAttribute("data-role");
-        authEl.innerHTML = authScreen(); wireAuth();
-        var f = document.getElementById("authName"); if (f) f.focus();
-      };
-    });
     var go = document.getElementById("authGo"), nameEl = document.getElementById("authName");
-    var submit = function () { var n = (nameEl.value || "").trim(); if (!n) { nameEl.focus(); return; } signIn(authRole, n); };
+    var submit = function () { var n = (nameEl.value || "").trim(); if (!n) { nameEl.focus(); return; } signIn("student", n); };
     if (go) go.onclick = submit;
     if (nameEl) { nameEl.oninput = function () { authName = nameEl.value; }; nameEl.onkeydown = function (e) { if (e.key === "Enter") submit(); }; }
   }
@@ -3432,7 +3537,7 @@
     var worksheet = "";
     var active = cl.sessions[cl.sessions.length - 1];
     if (view.clSession) active = cl.sessions.find(function (s) { return s.id === view.clSession; }) || active;
-    if (active) worksheet = renderWorksheet(active, cl, active.grades || {}, { origin: "leader", editable: true });
+    if (active) worksheet = renderWorksheet(active, cl, active.grades || {}, { origin: "leader", editable: true, reviewMode: true });
     return '<p class="sec-lead">Generate a Purdue SI-style practice session from a <strong>topic</strong>, from the <strong>files you uploaded</strong>, or from a free-form <strong>request</strong>. Published sessions appear in every student’s Sessions tab for this classroom. Use <strong>Edit session</strong> to fine-tune any question or answer before students see it.</p>' +
       roomSuggestBlock(cl) +
       '<div class="gen-row"><input type="text" id="roomTopicInput" placeholder="Type a topic or a request, e.g. “make a session on titration curves”" />' +
@@ -4237,26 +4342,34 @@
     var cards;
     if (state.courses.length === 0) {
       cards = '<div class="empty">' + IC.inbox +
-        '<div class="big">No courses yet</div><div class="sm">Create your first course to add materials, chat, and build sessions.</div>' +
-        '<button class="btn primary" data-nav-btn="new" style="display:inline-flex">' + IC.plus + 'New course</button></div>';
+        '<div class="big">No tests yet</div><div class="sm">Add the exam you\'re studying for — set its date and your goal, and Sparky builds your study path.</div>' +
+        '<button class="btn primary" data-nav-btn="new" style="display:inline-flex">' + IC.plus + 'New test</button></div>';
     } else {
       cards = '<div class="course-grid">' + state.courses.map(function (c) {
         return '<div class="ccard" data-open="' + c.id + '">' +
           '<div class="ccard-top"><span class="ccard-dot" style="background:' + courseColor(c) + '"></span>' +
-            '<button class="ccard-del" data-del="' + c.id + '" aria-label="Delete course">' + IC.trash + '</button></div>' +
+            '<button class="ccard-del" data-del="' + c.id + '" aria-label="Delete test">' + IC.trash + '</button></div>' +
           '<div class="ccard-name">' + esc(c.name) + '</div>' +
-          '<div class="ccard-meta">' + c.materials.length + ' material' + (c.materials.length === 1 ? '' : 's') +
-            ' · ' + c.sessions.length + ' session' + (c.sessions.length === 1 ? '' : 's') + '</div>' +
+          '<div class="ccard-meta">' + esc((EXAMS[c.exam] || {}).label || "Exam") + testCountdownMeta(c) + '</div>' +
           '<div class="ccard-foot">Open ' + IC.arrowRight + '</div></div>';
       }).join("") +
-      '<div class="ccard add-ccard" data-nav-btn="new">' + IC.plus + '<span class="t">New course</span></div></div>';
+      '<div class="ccard add-ccard" data-nav-btn="new">' + IC.plus + '<span class="t">New test</span></div></div>';
     }
     return '<div class="page-scroll"><div class="page-inner">' +
       '<div class="page-head"><div>' +
-        '<h1 class="page-title">Courses</h1>' +
-        '<p class="page-sub">Your electrician study areas. Open one to add material, ask grounded questions, take a practice test, or build a study session.</p>' +
-      '</div>' + (state.courses.length ? '<button class="btn primary" data-nav-btn="new">' + IC.spark + 'New course</button>' : '') + '</div>' +
+        '<h1 class="page-title">Your tests</h1>' +
+        '<p class="page-sub">Each test is an exam you\'re working toward. Open one to see your countdown, what to study next, and your readiness.</p>' +
+      '</div>' + (state.courses.length ? '<button class="btn primary" data-nav-btn="new">' + IC.spark + 'New test</button>' : '') + '</div>' +
       cards + '</div></div>';
+  }
+  // "· 24 days left" / "· Test today" / "· Test passed" meta for a test card.
+  function testCountdownMeta(c) {
+    var d = daysUntil(c.testDate);
+    if (d === null) return '';
+    if (d > 1) return ' · ' + d + ' days left';
+    if (d === 1) return ' · 1 day left';
+    if (d === 0) return ' · Test today';
+    return ' · Test date passed';
   }
 
   // ---------- new course ----------
@@ -4266,18 +4379,29 @@
     var sw = COLORS.map(function (col, i) {
       return '<button class="sw ' + (i === 0 ? "on" : "") + '" data-color="' + col + '" style="background:' + col + '" aria-label="Color"></button>';
     }).join("");
+    var examOpts = EXAM_ORDER.map(function (k) {
+      return '<option value="' + k + '"' + (k === "journeyman" ? ' selected' : '') + '>' + esc(EXAMS[k].label) + '</option>';
+    }).join("");
     return '<div class="page-scroll"><div class="form-wrap">' +
-      '<button class="back" data-nav-btn="courses">' + IC.arrowLeft + 'Back to courses</button>' +
+      '<button class="back" data-nav-btn="courses">' + IC.arrowLeft + 'Back to tests</button>' +
       '<div class="form-card">' +
-        '<h1 class="page-title">Create a course</h1>' +
-        '<p class="page-sub" style="margin-bottom:22px">Give it a name and pick a color. You can add materials once it\'s created.</p>' +
-        '<label class="field-label" for="ncName">Course name</label>' +
-        '<input type="text" id="ncName" placeholder="e.g. Electrical Fundamentals, NEC Journeyman" />' +
+        '<h1 class="page-title">Add a test</h1>' +
+        '<p class="page-sub" style="margin-bottom:22px">Tell Sparky which exam you\'re preparing for and when it is. It uses this to build your countdown study plan and track your readiness. You can change any of it later.</p>' +
+        '<label class="field-label" for="ncName">Name this test</label>' +
+        '<input type="text" id="ncName" placeholder="e.g. Journeyman License, State Exam" />' +
+        '<label class="field-label" for="ncExam" style="margin-top:18px">Which exam?</label>' +
+        '<select id="ncExam" class="nc-select">' + examOpts + '</select>' +
+        '<div class="nc-row">' +
+          '<div class="nc-col"><label class="field-label" for="ncDate">Test date <span class="ed-hint">— optional</span></label>' +
+            '<input type="date" id="ncDate" class="nc-select" /></div>' +
+          '<div class="nc-col"><label class="field-label" for="ncTarget">Target score</label>' +
+            '<div class="nc-target"><input type="number" id="ncTarget" class="nc-select" min="1" max="100" value="70" /><span class="nc-pct">%</span></div></div>' +
+        '</div>' +
         '<label class="field-label" style="margin-top:18px">Color</label>' +
         '<div class="swatch-row" id="swatchRow">' + sw + '</div>' +
         '<div class="form-actions">' +
           '<button class="btn ghost" data-nav-btn="courses">Cancel</button>' +
-          '<button class="btn primary" id="createBtn">Create course</button>' +
+          '<button class="btn primary" id="createBtn">Add test</button>' +
         '</div></div></div></div>';
   }
 
@@ -4286,19 +4410,22 @@
     var mats = course.materials.length;
     var crumb = '<div class="crumb">' +
       '<button class="back" data-nav-btn="courses">' + IC.arrowLeft + '</button>' +
-      '<span data-nav-btn="courses" style="cursor:pointer">Courses</span>' +
+      '<span data-nav-btn="courses" style="cursor:pointer">Tests</span>' +
       '<span class="sep">/</span><span class="cur">' + esc(course.name) + '</span></div>';
+    var cd = countdownLabel(course.testDate);
     var ctx = '<div class="ctx"><div>' +
         '<h1 class="ctx-title">' + esc(course.name) + '</h1>' +
-        '<div class="ctx-meta"><span>' + mats + ' material' + (mats === 1 ? '' : 's') + '</span>' +
+        '<div class="ctx-meta"><span>' + esc((EXAMS[course.exam] || {}).label || "Exam") + '</span>' +
+          (cd ? '<span class="sep">·</span><span>' + esc(cd) + '</span>' : '') +
           '<span class="sep">·</span><span class="live"><span class="pulse"></span>Grounded answers on</span></div>' +
       '</div><div class="ctx-actions">' +
         '<button class="btn ghost" data-goto="materials">' + IC.plus + 'Add material</button>' +
-        '<button class="btn primary" data-goto="sessions">' + IC.spark + 'New session</button>' +
+        '<button class="btn primary" data-goto="overview">' + IC.spark + 'What to study</button>' +
       '</div></div>';
-    var tabs = '<div class="tabs">' + tabBtn("materials", "Materials") + tabBtn("test", "Practice test") + tabBtn("sessions", "Practice sessions") + tabBtn("plan", "Study plan") + tabBtn("prep", "Prep seasons") + tabBtn("grades", "Grade predictor") + tabBtn("tutor", "Tutor") + tabBtn("chat", "Chat") + tabBtn("contacts", "Contacts") + '</div>';
+    var tabs = '<div class="tabs">' + tabBtn("overview", "Overview") + tabBtn("materials", "Materials") + tabBtn("test", "Practice test") + tabBtn("sessions", "Practice sessions") + tabBtn("plan", "Study plan") + tabBtn("prep", "Prep seasons") + tabBtn("grades", "Grade predictor") + tabBtn("tutor", "Tutor") + tabBtn("chat", "Chat") + tabBtn("contacts", "Contacts") + '</div>';
     var body;
-    if (view.tab === "materials") body = renderMaterials(course);
+    if (view.tab === "overview") body = renderOverview(course);
+    else if (view.tab === "materials") body = renderMaterials(course);
     else if (view.tab === "test") body = renderPracticeTest(course);
     else if (view.tab === "contacts") body = renderContacts(course);
     else if (view.tab === "plan") body = renderPlan(course);
@@ -4311,6 +4438,103 @@
   }
   function tabBtn(id, label) {
     return '<button class="tab ' + (view.tab === id ? "active" : "") + '" data-tab="' + id + '">' + label + '</button>';
+  }
+
+  // ---------- Test overview (the home tab for a test) ----------
+  // The most recent practice-test scores, oldest→newest.
+  function testScores(course) {
+    return (course.testHistory || []).slice().sort(function (a, b) { return a.at - b.at; });
+  }
+  // Readiness estimate from recent practice-test scores vs the target. `pct` is
+  // the average of the last up-to-3 tests; null when nothing has been taken yet.
+  function computeReadiness(course) {
+    var hist = testScores(course), target = course.targetScore || 70, daysLeft = daysUntil(course.testDate);
+    if (!hist.length) return { taken: 0, target: target, daysLeft: daysLeft, pct: null, status: "Not measured yet", cls: "r-none" };
+    var recent = hist.slice(-3);
+    var avg = Math.round(recent.reduce(function (s, h) { return s + (h.total ? (h.score / h.total) * 100 : 0); }, 0) / recent.length);
+    var status, cls;
+    if (avg >= target) { status = "On track"; cls = "r-good"; }
+    else if (avg >= target - 10) { status = "Almost there"; cls = "r-warn"; }
+    else { status = "Keep studying"; cls = "r-bad"; }
+    return { taken: hist.length, target: target, daysLeft: daysLeft, pct: avg, status: status, cls: cls };
+  }
+
+  function renderOverview(course) {
+    var cd = daysUntil(course.testDate);
+    var exam = EXAMS[course.exam] || EXAMS.journeyman;
+    // Countdown card.
+    var countBig, countSub;
+    if (cd === null) { countBig = '<span class="ov-count-set">Set a date</span>'; countSub = "Add your test date to get a countdown and a dated plan."; }
+    else if (cd > 0) { countBig = cd + '<span class="ov-count-unit">day' + (cd === 1 ? '' : 's') + ' left</span>'; countSub = "Test on " + fmtDate(course.testDate) + "."; }
+    else if (cd === 0) { countBig = '<span class="ov-count-set">Today</span>'; countSub = "Your test is today — you've got this."; }
+    else { countBig = '<span class="ov-count-set">Passed</span>'; countSub = "Your test date has passed. Update it if you have a new one."; }
+    var countCard = '<div class="ov-card ov-count-card"><div class="ov-card-lbl">Countdown</div>' +
+      '<div class="ov-count">' + countBig + '</div><div class="ov-count-sub">' + esc(countSub) + '</div></div>';
+
+    // Readiness card with a meter (target marked on the bar).
+    var r = computeReadiness(course);
+    var meter;
+    if (r.pct === null) {
+      meter = '<div class="ready-empty">Take a practice test to measure where you stand against your ' + r.target + '% goal.</div>' +
+        '<button class="btn primary sm" data-goto="test">' + IC.spark + 'Take a practice test</button>';
+    } else {
+      var markLeft = Math.max(0, Math.min(100, r.target));
+      meter = '<div class="ready-num ' + r.cls + '">' + r.pct + '%<span class="ready-of"> avg · goal ' + r.target + '%</span></div>' +
+        '<div class="ready-bar"><div class="ready-fill ' + r.cls + '" style="width:' + Math.max(2, Math.min(100, r.pct)) + '%"></div>' +
+          '<div class="ready-mark" style="left:' + markLeft + '%" title="Goal ' + r.target + '%"></div></div>' +
+        '<div class="ready-foot"><span class="ready-pill ' + r.cls + '">' + esc(r.status) + '</span>' +
+          '<span class="ready-note">' + r.taken + ' test' + (r.taken === 1 ? '' : 's') + ' taken</span></div>';
+    }
+    var readyCard = '<div class="ov-card"><div class="ov-card-lbl">Readiness</div>' + meter + '</div>';
+
+    // What to study next: weak areas + plan status + quick actions.
+    var focus = (course.planFocus || []).filter(function (t) { return t && t.trim(); });
+    var focusHTML = focus.length
+      ? '<div class="ov-focus"><span class="ov-focus-lbl">Focusing on:</span>' + focus.map(function (t) { return '<span class="plan-topic">' + esc(t) + '</span>'; }).join("") + '</div>'
+      : '<div class="ov-focus ov-focus-empty">No weak areas set yet — run a diagnostic or add them in <strong>Study plan</strong>.</div>';
+    var planLine = (course.studyPlan && course.studyPlan.content)
+      ? '<div class="ov-next-line">' + IC.check + 'Your countdown study plan is ready.</div>'
+      : '<div class="ov-next-line ov-next-todo">' + IC.spark + 'No study plan yet — build one dated to your test.</div>';
+    var actions = '<div class="ov-actions">' +
+      '<button class="btn primary sm" data-goto="test">' + IC.spark + 'Run a diagnostic test</button>' +
+      '<button class="btn ghost sm" data-goto="plan">' + IC.calendar + 'Build study plan</button>' +
+      '<button class="btn ghost sm" data-goto="sessions">' + IC.cap + 'Practice session</button>' +
+      '<button class="btn ghost sm" data-goto="materials">' + IC.plus + 'Add materials</button>' +
+      '</div>';
+    var nextCard = '<div class="ov-card ov-wide"><div class="ov-card-lbl">What to study next</div>' +
+      focusHTML + planLine + actions + '</div>';
+
+    // Editable test settings.
+    var examOpts = EXAM_ORDER.map(function (k) {
+      return '<option value="' + k + '"' + (k === course.exam ? ' selected' : '') + '>' + esc(EXAMS[k].label) + '</option>';
+    }).join("");
+    var settings = '<div class="ov-card ov-wide"><div class="ov-card-lbl">Test details</div>' +
+      '<div class="ov-set-grid">' +
+        '<div class="nc-col"><label class="field-label" for="ovExam">Exam</label><select id="ovExam" class="nc-select">' + examOpts + '</select></div>' +
+        '<div class="nc-col"><label class="field-label" for="ovDate">Test date</label><input type="date" id="ovDate" class="nc-select" value="' + esc(course.testDate || "") + '" /></div>' +
+        '<div class="nc-col"><label class="field-label" for="ovTarget">Target score</label><div class="nc-target"><input type="number" id="ovTarget" class="nc-select" min="1" max="100" value="' + (course.targetScore || 70) + '" /><span class="nc-pct">%</span></div></div>' +
+      '</div>' +
+      '<div class="ov-set-actions"><button class="btn ghost sm" id="ovSave">' + IC.check + 'Save details</button><span class="ov-set-saved" id="ovSaved"></span></div>' +
+      '<p class="ov-set-scope">' + esc(exam.testFocus) + '</p></div>';
+
+    return '<div class="content-inner"><div class="ov-grid">' +
+      countCard + readyCard + nextCard + settings + '</div></div>';
+  }
+  function wireOverview(course) {
+    var save = document.getElementById("ovSave");
+    if (!save) return;
+    save.onclick = function () {
+      var ex = document.getElementById("ovExam"), dt = document.getElementById("ovDate"), tg = document.getElementById("ovTarget");
+      if (ex && EXAMS[ex.value]) course.exam = ex.value;
+      if (dt) course.testDate = dt.value || "";
+      if (tg) course.targetScore = Math.max(1, Math.min(100, parseInt(tg.value, 10) || 70));
+      persist(); renderPage();
+    };
+  }
+  // Short "Aug 15, 2026" date from an ISO yyyy-mm-dd (avoids TZ shifts).
+  function fmtDate(iso) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ""); if (!m) return iso || "";
+    return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
   }
 
   function renderMaterials(course) {
@@ -4489,6 +4713,29 @@
     return '<div class="content-inner">' + lead + noMats + focusBlock + gen + planBody + timeBlock + '</div>';
   }
 
+  // A tappable week grid (days × coarse time blocks). Tapping a cell marks that
+  // block free; the selection is stored on course.freeGrid and folded into the
+  // availability text the scheduler works from. Complements the free-text box —
+  // some students would rather point than type.
+  function freeGridHTML(course) {
+    var grid = course.freeGrid || {};
+    var head = '<div class="fg-cell fg-corner"></div>' +
+      FREE_DAYS.map(function (d) { return '<div class="fg-cell fg-day">' + esc(d) + '</div>'; }).join("");
+    var rows = FREE_ROWS.map(function (r, ri) {
+      var cells = FREE_DAYS.map(function (d, di) {
+        var on = !!grid[di + "-" + ri];
+        return '<button type="button" class="fg-cell fg-slot' + (on ? " on" : "") + '" data-fg="' + di + "-" + ri +
+          '" aria-pressed="' + (on ? "true" : "false") + '" title="' + esc(d + " " + r.when) + '"></button>';
+      }).join("");
+      return '<div class="fg-rowlabel">' + esc(r.label) + '<span class="fg-when">' + esc(r.when) + '</span></div>' + cells;
+    }).join("");
+    var any = Object.keys(grid).some(function (k) { return grid[k]; });
+    return '<div class="freegrid-wrap">' +
+      '<div class="fg-head"><span class="field-label">Tap when you\'re free</span>' +
+        '<button type="button" class="btn ghost sm fg-clear" id="freeGridClear"' + (any ? "" : ' style="display:none"') + '>' + IC.trash + 'Clear grid</button></div>' +
+      '<div class="freegrid" id="freeGrid">' + head + rows + '</div></div>';
+  }
+
   // "Where do I find time to study this?" — the student enters their weekly
   // commitments and/or imports a Google Calendar .ics export, and the plan is
   // laid out day-by-day around their free time.
@@ -4497,9 +4744,10 @@
     var inputs = '<div class="findtime-inputs">' +
       '<label class="field-label" for="availInput">Your weekly commitments &amp; free time</label>' +
       '<textarea id="availInput" placeholder="e.g. Classes Mon/Wed/Fri 9–2, work Tue/Thu evenings, free most nights after 7 and Sunday afternoons.">' + esc(course.availability || "") + '</textarea>' +
-      '<div class="ics-drop">' + IC.calendar + '<input type="file" id="icsFile" accept=".ics,text/calendar" />' +
-        '<span class="file-status" id="icsStatus">Optional: import a Google Calendar export (Calendar → Settings → Import &amp; export → Export) to schedule around real events.</span></div>' +
-      '<textarea id="icsPaste" class="ics-paste" placeholder="…or paste the contents of your .ics file here."></textarea>' +
+      freeGridHTML(course) +
+      '<div class="ics-drop">' + IC.calendar + '<input type="file" id="icsFile" accept=".ics,text/calendar" multiple />' +
+        '<span class="file-status" id="icsStatus">Optional: import one or more Google Calendar exports (Calendar → Settings → Import &amp; export → Export) to schedule around real events. You can pick several .ics files at once.</span></div>' +
+      '<textarea id="icsPaste" class="ics-paste" placeholder="…or paste the contents of your .ics file(s) here."></textarea>' +
       '</div>';
     var body = has
       ? dayScheduleHTML(course.daySchedule)
@@ -4908,13 +5156,23 @@
     return head + qs + submit;
   }
 
-  function ptResultsHTML(t) {
+  function ptResultsHTML(t, course) {
     var pct = Math.round(100 * t.score / t.questions.length);
-    var pass = pct >= 70;
+    var bar = (course && course.targetScore) || 70;
+    var pass = pct >= bar;
     var banner = '<div class="pt-score ' + (pass ? 'pass' : 'fail') + '">' +
       '<div class="pt-score-num">' + pct + '%</div>' +
       '<div class="pt-score-sub">' + t.score + ' / ' + t.questions.length + ' correct · ' + ptLevelLabel(t.level) +
-        (pass ? ' · Passing (70%+)' : ' · Below passing (70%)') + '</div></div>';
+        (pass ? ' · At or above your ' + bar + '% goal' : ' · Below your ' + bar + '% goal') + '</div></div>';
+    // Diagnostic read-out: offer the missed topics as this test's focus areas.
+    var weak = "";
+    if (course && course.id !== "quick" && t.missedTopics && t.missedTopics.length) {
+      var chips = t.missedTopics.slice(0, 8).map(function (tp) { return '<span class="plan-topic">' + esc(tp) + '</span>'; }).join("");
+      weak = '<div class="pt-weak"><div class="pt-weak-head">' + IC.spark + 'Weak areas from this test</div>' +
+        '<div class="pt-weak-chips">' + chips + '</div>' +
+        '<button class="btn ghost sm" id="ptFocus">' + IC.plus + 'Make these my focus areas</button>' +
+        '<span class="pt-weak-note">Sets the top 3 as the focus of your study plan.</span></div>';
+    }
     var qs = t.questions.map(function (q, i) {
       var chosen = t.answers["pq" + i];
       var right = chosen === q.correct;
@@ -4936,7 +5194,7 @@
           (q.topic ? ' <span class="pt-topic">' + esc(q.topic) + '</span>' : '') + '</div></div>';
     }).join("");
     var actions = '<div class="pt-actions"><button class="btn primary" id="ptNew">' + IC.spark + 'New test</button></div>';
-    return '<div class="pt-results">' + banner + qs + actions + '</div>';
+    return '<div class="pt-results">' + banner + weak + qs + actions + '</div>';
   }
 
   // Synthetic, persisted "course" backing the top-level Quick test — no
@@ -4964,7 +5222,7 @@
     if (t && !t.submitted) return '<div class="content-inner">' + ptQuizHTML(t) + '</div>';
     var lead = hideLead ? '' : '<p class="sec-lead">Take a scored multiple-choice practice exam for the electrician test. Pick your exam and length, answer every question, then submit to see your score with an explanation for each one. Uploaded materials make the questions more specific.' +
       (claudeReady() ? '' : ' <em>(No AI connection right now — using a built-in question bank.)</em>') + '</p>';
-    var results = (t && t.submitted) ? ptResultsHTML(t) : "";
+    var results = (t && t.submitted) ? ptResultsHTML(t, course) : "";
     return '<div class="content-inner">' + lead + results + ptControlsHTML(course) + '</div>';
   }
 
@@ -5003,9 +5261,15 @@
       var t = course.test; if (!t) return;
       var unanswered = t.questions.length - Object.keys(t.answers).length;
       if (unanswered > 0 && !confirm(unanswered + " question(s) are unanswered and will be marked wrong. Submit anyway?")) return;
-      var score = 0;
-      t.questions.forEach(function (q, i) { if (t.answers["pq" + i] === q.correct) score++; });
+      var score = 0, missed = {};
+      t.questions.forEach(function (q, i) {
+        if (t.answers["pq" + i] === q.correct) score++;
+        else if (q.topic) missed[q.topic] = (missed[q.topic] || 0) + 1;
+      });
       t.submitted = true; t.score = score; t.at = Date.now();
+      // Topics of the questions they missed, most-missed first — the diagnostic's
+      // read on their weak areas. Offered as focus areas in the results.
+      t.missedTopics = Object.keys(missed).sort(function (a, b) { return missed[b] - missed[a]; });
       course.testHistory = (course.testHistory || []).concat([{ at: t.at, level: t.level, count: t.questions.length, score: score, total: t.questions.length }]);
       persist(); renderPage();
     };
@@ -5014,6 +5278,16 @@
     if (cancel) cancel.onclick = function () { if (confirm("Discard this test?")) { course.test = null; persist(); renderPage(); } };
     var neu = document.getElementById("ptNew");
     if (neu) neu.onclick = function () { course.test = null; persist(); renderPage(); };
+
+    // Diagnostic → focus: set the top-3 missed topics as this test's focus areas,
+    // which the study plan then builds around. Then jump to the plan.
+    var focusBtn = document.getElementById("ptFocus");
+    if (focusBtn) focusBtn.onclick = function () {
+      var t = course.test; if (!t || !t.missedTopics) return;
+      course.planFocus = t.missedTopics.slice(0, 3);
+      persist();
+      view.tab = "plan"; renderPage();
+    };
   }
 
   // Study-mode toggle shown above a session worksheet: solo self-study vs.
@@ -5046,7 +5320,9 @@
     var worksheet = "";
     var active = course.sessions[course.sessions.length - 1];
     if (view.activeSession) active = course.sessions.find(function (s) { return s.id === view.activeSession; }) || active;
-    if (active) worksheet = studyModeToggle() + renderWorksheet(active, course);
+    // origin "student" + editable (but NOT reviewMode): the student practices as
+    // usual and can also Edit / add their own questions to their own session.
+    if (active) worksheet = studyModeToggle() + renderWorksheet(active, course, null, { origin: "student", editable: true });
 
     // Suggested topics to pick from: existing course topics plus any AI-fetched
     // suggestions. No uploads required — students can pick one or type their own.
@@ -5065,9 +5341,9 @@
       '</div>';
 
     return '<div class="content-inner">' +
-      '<p class="sec-lead">Generate a Purdue SI-style practice session — warm-up recall, group problems, and a wrap-up check. Pick a suggested topic or type your own — no uploads required. Uploaded materials, if any, make it more specific.</p>' +
+      '<p class="sec-lead">Generate a focused study session — warm-up recall, practice problems, and a wrap-up check — on any topic for your exam. Pick a suggested topic or type your own; no uploads required. Uploaded materials, if any, make it more specific.</p>' +
       suggestBlock +
-      '<div class="gen-row"><input type="text" id="topicInput" placeholder="Or type any topic, e.g. Le Chatelier\'s principle" />' +
+      '<div class="gen-row"><input type="text" id="topicInput" placeholder="Or type any topic, e.g. conduit fill, voltage drop, GFCI protection" />' +
         '<button class="btn primary" id="genBtn">' + IC.spark + 'Generate session</button></div>' +
       picker + worksheet + '</div>';
   }
@@ -5095,16 +5371,34 @@
       : 'Reveal each answer, check your work, then grade yourself on each item.';
   }
 
-  // opts: { origin: "leader" | "student", editable: bool }
+  // "Why this session looks like this" — a collapsible block shown to whoever
+  // opens the session. It pairs the session-specific rationale (written by
+  // Claude, or the offline fallback, when the session was generated) with a
+  // fixed explainer of the three-part study-session structure.
+  function whySessionHTML(c) {
+    var rationale = (c && c.rationale) ? '<p class="why-rationale">' + esc(c.rationale) + '</p>' : "";
+    var fixed = '<ul class="why-parts">' +
+      '<li><strong>Warm-up recall</strong> — quick, low-stakes questions that pull the key ideas back into memory before you use them.</li>' +
+      '<li><strong>Practice problems</strong> — the heart of the session: harder, applied problems with a coaching hint instead of a straight answer, so you reason it out the way the exam expects.</li>' +
+      '<li><strong>Wrap-up check</strong> — a short self-test that confirms you can now explain the idea on your own and surfaces what still needs review.</li>' +
+      '</ul>';
+    return '<details class="why-session"><summary>' + IC.spark + 'Why this session is built this way</summary>' +
+      '<div class="why-body">' + rationale + fixed + '</div></details>';
+  }
+
+  // opts: { origin: "leader" | "student", editable: bool, reviewMode: bool }
   //  - origin drives the "who made this" badge in the worksheet head.
-  //  - editable is true only for a leader looking at their own published
-  //    session; it exposes the Edit button and the inline editor.
+  //  - editable exposes the Edit button and the inline editor (leaders on their
+  //    classroom sessions, and students on their own personal-course sessions).
+  //  - reviewMode is the leader's "check the material" view: all answers shown
+  //    up front, no self-grading. Editable does NOT imply reviewMode.
   function renderWorksheet(s, course, gradesOverride, opts) {
     opts = opts || {};
     if (opts.editable && view.editSession === s.id) return renderSessionEditor(s);
     // A leader reviewing their own session sees every answer up front and never
     // self-grades — they're checking and editing the material, not practicing it.
-    var leaderMode = !!opts.editable;
+    // (A student editing their OWN session keeps the normal practice view.)
+    var leaderMode = !!opts.reviewMode;
     var c = s.content, grades = gradesOverride || s.grades || {};
     // Old sessions stored plain strings; newer ones store {q, answer}.
     function qText(it) { return typeof it === "string" ? it : (it.q || it.prompt || ""); }
@@ -5166,9 +5460,10 @@
         '<div class="ws-head"><div class="ws-head-top"><h2>' + esc(s.topic) + '</h2>' + badge + editBtn + revealToggle + '</div>' +
         '<div class="ts">Generated ' + new Date(s.createdAt).toLocaleString() + '</div>' +
         scoreBlock + '</div>' +
+      whySessionHTML(c) +
       (s.plan ? planAgendaHTML(s.plan) : "") +
       '<div class="ws-block"><div class="lbl"><span class="num">1</span>Warm-up recall</div>' + section(c.warmUp, "warmUp", false) + '</div>' +
-      '<div class="ws-block"><div class="lbl"><span class="num">2</span>Group problems</div>' + section(c.groupProblems, "groupProblems", true) + '</div>' +
+      '<div class="ws-block"><div class="lbl"><span class="num">2</span>Practice problems</div>' + section(c.groupProblems, "groupProblems", true) + '</div>' +
       '<div class="ws-block"><div class="lbl"><span class="num">3</span>Wrap-up check</div>' + section(c.wrapUpCheck, "wrapUpCheck", false) + '</div></div>';
   }
 
@@ -5203,6 +5498,8 @@
     return '<div class="ws-edit" id="sessionEditor">' +
       '<label class="ed-flabel">Session topic</label>' +
       '<input type="text" class="ed-topic" id="edTopic" value="' + esc(s.topic) + '" />' +
+      '<label class="ed-flabel">Why this session is built this way <span class="ed-hint">— shown to whoever opens it</span></label>' +
+      '<textarea class="ed-rationale" id="edRationale" rows="3" placeholder="Explain why these warm-ups, practice problems, and wrap-up checks were chosen for this topic.">' + esc((c.rationale) || "") + '</textarea>' +
       sections +
       '<div class="ed-actions">' +
         '<button class="btn primary" id="edSave">' + IC.check + 'Save changes</button>' +
@@ -5231,6 +5528,8 @@
     });
     var t = document.getElementById("edTopic");
     if (t && t.value.trim()) s.topic = t.value.trim();
+    var r = document.getElementById("edRationale");
+    if (r) s.content.rationale = r.value.trim();
   }
 
   // Wire the inline session editor. `active` is the session being edited (a
@@ -5501,7 +5800,7 @@
 
   // ---------- page wiring ----------
   function delCourse(id) {
-    if (!confirm("Delete this course and all its data?")) return;
+    if (!confirm("Delete this test and all its data?")) return;
     state.courses = state.courses.filter(function (c) { return c.id !== id; });
     if (view.courseId === id) { view.courseId = null; view.page = "courses"; }
     persist(); render();
@@ -5514,16 +5813,11 @@
 
     if (view.page === "quicktest") { wirePracticeTest(quickCourse()); return; }
 
-    if (isLeader()) { wireLeaderPage(); return; }
-
-    if (view.page === "classrooms") { wireStudentClassrooms(); return; }
-    // A joined classroom reuses the course-detail wiring below via activeCourse().
-
     if (view.page === "courses") {
       Array.prototype.forEach.call(pageEl.querySelectorAll(".ccard[data-open]"), function (card) {
         card.onclick = function (e) {
           if (e.target.closest("[data-del]")) return;
-          navigate({ page: "course", courseId: card.getAttribute("data-open"), tab: "materials", activeSession: null });
+          navigate({ page: "course", courseId: card.getAttribute("data-open"), tab: "overview", activeSession: null });
         };
       });
       Array.prototype.forEach.call(pageEl.querySelectorAll(".ccard [data-del]"), function (d) {
@@ -5540,11 +5834,18 @@
         Array.prototype.forEach.call(swRow.querySelectorAll(".sw"), function (x) { x.classList.toggle("on", x === b); });
       };
       var name = document.getElementById("ncName");
+      var examSel = document.getElementById("ncExam");
+      var dateEl = document.getElementById("ncDate");
+      var targetEl = document.getElementById("ncTarget");
       var create = function () {
         var n = name.value.trim(); if (!n) { name.focus(); return; }
-        var c = normalizeCourse({ id: uid(), name: n, color: newColor });
+        var exam = examSel && EXAMS[examSel.value] ? examSel.value : "journeyman";
+        var target = Math.max(1, Math.min(100, parseInt((targetEl && targetEl.value) || "70", 10) || 70));
+        var c = normalizeCourse({ id: uid(), name: n, color: newColor, exam: exam,
+          testDate: (dateEl && dateEl.value) || "", targetScore: target });
         state.courses.push(c); persist();
-        navigate({ page: "course", courseId: c.id, tab: "materials", activeSession: null });
+        // Land on the new test's overview so the countdown/next steps are front and center.
+        navigate({ page: "course", courseId: c.id, tab: "overview", activeSession: null });
       };
       document.getElementById("createBtn").onclick = create;
       name.onkeydown = function (e) { if (e.key === "Enter") create(); };
@@ -5567,6 +5868,8 @@
     Array.prototype.forEach.call(pageEl.querySelectorAll("[data-goto]"), function (b) {
       b.onclick = function () { view.tab = b.getAttribute("data-goto"); view.activeSession = null; renderPage(); };
     });
+
+    if (view.tab === "overview") { wireOverview(course); return; }
 
     if (view.tab === "materials") {
       if (cl) { wireClassroomMaterialAdd(cl, course); }
@@ -5749,6 +6052,10 @@
       var ws = document.getElementById("worksheet");
       var activeS = course.sessions[course.sessions.length - 1];
       if (view.activeSession) activeS = course.sessions.find(function (x) { return x.id === view.activeSession; }) || activeS;
+      // Personal-course sessions are editable: wire the Edit button + inline
+      // editor. When editing, renderWorksheet returns the editor (no #worksheet),
+      // so this must run regardless of the grading block below.
+      if (activeS) wireSessionEditor(activeS);
       if (ws && activeS) {
         if (!activeS.grades) activeS.grades = {};
         // Reveal is per-question so grading or revealing one item never exposes the rest.
@@ -5910,27 +6217,62 @@
       // ----- "Where do I find time to study this?" day-by-day guide -----
       var availInput = document.getElementById("availInput");
       if (availInput) availInput.oninput = function () { course.availability = availInput.value; persist(); };
+      // Weekly free-time grid: tap cells to toggle, no full re-render so the
+      // page doesn't jump. Selection lives on course.freeGrid and is persisted.
+      var freeGrid = document.getElementById("freeGrid");
+      var freeGridClear = document.getElementById("freeGridClear");
+      function syncFreeGridClear() {
+        if (!freeGridClear) return;
+        var any = Object.keys(course.freeGrid || {}).some(function (k) { return course.freeGrid[k]; });
+        freeGridClear.style.display = any ? "" : "none";
+      }
+      if (freeGrid) Array.prototype.forEach.call(freeGrid.querySelectorAll(".fg-slot"), function (cell) {
+        cell.onclick = function () {
+          var k = cell.getAttribute("data-fg");
+          if (course.freeGrid[k]) delete course.freeGrid[k]; else course.freeGrid[k] = true;
+          cell.classList.toggle("on", !!course.freeGrid[k]);
+          cell.setAttribute("aria-pressed", course.freeGrid[k] ? "true" : "false");
+          syncFreeGridClear(); persist();
+        };
+      });
+      if (freeGridClear) freeGridClear.onclick = function () { course.freeGrid = {}; persist(); renderPage(); };
+
+      // Multiple .ics files: read them all, merge every event, and drop the
+      // combined text into the paste box the scheduler reads from.
       var icsFile = document.getElementById("icsFile"), icsPaste = document.getElementById("icsPaste"), icsStatus = document.getElementById("icsStatus");
       if (icsFile) icsFile.onchange = function () {
-        var f = icsFile.files[0]; if (!f) return;
-        var reader = new FileReader();
-        reader.onload = function () {
-          if (icsPaste) icsPaste.value = reader.result || "";
-          var n = parseIcsBusy(reader.result).length;
-          if (icsStatus) icsStatus.textContent = n ? ("✓ Loaded " + f.name + " — " + n + " event" + (n === 1 ? "" : "s") + " found.") : ("Loaded " + f.name + ", but no events were found in it.");
-        };
-        reader.readAsText(f);
+        var files = Array.prototype.slice.call(icsFile.files || []); if (!files.length) return;
+        if (icsStatus) icsStatus.textContent = "Reading " + files.length + " file" + (files.length === 1 ? "" : "s") + "…";
+        var texts = new Array(files.length), done = 0;
+        files.forEach(function (f, i) {
+          var reader = new FileReader();
+          reader.onload = function () {
+            texts[i] = reader.result || "";
+            if (++done === files.length) {
+              var merged = texts.join("\n");
+              if (icsPaste) icsPaste.value = merged;
+              var n = parseIcsBusy(merged).length;
+              if (icsStatus) icsStatus.textContent = n
+                ? ("✓ Loaded " + files.length + " file" + (files.length === 1 ? "" : "s") + " — " + n + " event" + (n === 1 ? "" : "s") + " found.")
+                : ("Loaded " + files.length + " file" + (files.length === 1 ? "" : "s") + ", but no events were found.");
+            }
+          };
+          reader.readAsText(f);
+        });
       };
       var findTimeBtn = document.getElementById("findTimeBtn");
       if (findTimeBtn) findTimeBtn.onclick = async function () {
         var avail = availInput ? availInput.value.trim() : (course.availability || "");
         var ics = icsPaste ? icsPaste.value.trim() : "";
-        if (!avail && !ics) { alert("Add your weekly availability (or import a calendar) first, so there's a schedule to work around."); if (availInput) availInput.focus(); return; }
+        var gridText = freeGridToText(course.freeGrid);
+        if (!avail && !ics && !gridText) { alert("Add your weekly availability — type it, tap the free-time grid, or import a calendar — so there's a schedule to work around."); if (availInput) availInput.focus(); return; }
         course.availability = avail; persist();
+        // Hand the scheduler the typed text and the tapped grid together.
+        var availForGen = [avail, gridText ? "Free-time grid — " + gridText : ""].filter(Boolean).join("\n");
         var orig = findTimeBtn.innerHTML;
         findTimeBtn.disabled = true; findTimeBtn.innerHTML = IC.spark + 'Finding time…';
         try {
-          course.daySchedule = await generateDayByDay(course, avail, ics);
+          course.daySchedule = await generateDayByDay(course, availForGen, ics);
           persist(); renderPage();
         } catch (e) {
           alert("Couldn't build a day-by-day guide: " + e.message);
@@ -6024,20 +6366,14 @@
     navigate({ page: b.getAttribute("data-nav"), activeSession: null });
   });
   courseList.addEventListener("click", function (e) {
-    var delRoom = e.target.closest("[data-delroom]");
-    if (delRoom) { e.stopPropagation(); delClassroom(delRoom.getAttribute("data-delroom")); return; }
     var del = e.target.closest("[data-del]");
     if (del) { e.stopPropagation(); delCourse(del.getAttribute("data-del")); return; }
-    var room = e.target.closest("[data-room]");
-    if (room) { navigate({ page: "lclass", classroomId: room.getAttribute("data-room"), classroomTab: "materials", clSession: null }); return; }
-    var sroom = e.target.closest("[data-room-student]");
-    if (sroom) { navigate({ page: "classroom", classroomId: sroom.getAttribute("data-room-student"), tab: "materials", activeSession: null, sessionSuggestions: null }); return; }
     var item = e.target.closest(".course[data-id]");
-    if (item) navigate({ page: "course", courseId: item.getAttribute("data-id"), tab: "materials", activeSession: null, sessionSuggestions: null });
+    if (item) navigate({ page: "course", courseId: item.getAttribute("data-id"), tab: "overview", activeSession: null, sessionSuggestions: null });
   });
 
   document.getElementById("resetBtn").onclick = function () {
-    if (!confirm("Clear all demo data from this browser and reload the sample course?")) return;
+    if (!confirm("Clear all demo data from this browser and reload the sample test?")) return;
     localStorage.removeItem(KEY); state = seed();
     state.classrooms = []; state.classroomChats = {}; state.classroomGrades = {}; state.enrolled = {};
     view.courseId = null; view.classroomId = null; view.page = isLeader() ? "home" : "courses";
