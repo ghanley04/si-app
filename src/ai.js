@@ -47,6 +47,31 @@ export function claudeReady() { return PROXY_URL.length > 0 || getKey().length >
 //   content — an array of content blocks (text, document, image, …)
 //   schema  — structured JSON output; maxTokens — override the default cap.
 export async function callClaude(opts) {
+  // Anthropic rejects a single request that carries BOTH a structured-output
+  // schema (output_config) AND server-side tools like web_search — it returns
+  // 400 "Invalid request data". When a caller asks for both, split it into two
+  // passes: first let Claude research with the tools (plain text out), then a
+  // second, tool-free call reshapes that research into the requested schema.
+  if (opts.schema && opts.tools) {
+    var research = await callClaude({
+      system: opts.system,
+      user: opts.user,
+      content: opts.content,
+      tools: opts.tools,
+      maxTokens: opts.maxTokens
+    });
+    var formatUser = (typeof opts.user === "string" ? opts.user : "Structure the notes below.") +
+      "\n\nWEB-RESEARCHED NOTES (use these to fill in real, current topic details — never invent dates):\n" +
+      research +
+      "\n\nNow return ONLY the structured result described above.";
+    return await callClaude({
+      system: opts.system,
+      user: formatUser,
+      schema: opts.schema,
+      maxTokens: opts.maxTokens
+    });
+  }
+
   var body = {
     model: CLAUDE.model,
     max_tokens: opts.maxTokens || CLAUDE.maxTokens,

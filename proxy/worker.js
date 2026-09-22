@@ -21,6 +21,8 @@ const ALLOWED_ORIGINS = [
   "https://ghanley04.github.io",   // GitHub Pages deployment
   "http://localhost:8138",   // local dev (serve.command)
   "http://127.0.0.1:8138",
+  "http://localhost:5500",   // local dev (VS Code Live Server)
+  "http://127.0.0.1:5500",
 ];
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
