@@ -1,6 +1,10 @@
 # OS junk
 .DS_Store
 
+# Node / Vite build
+node_modules
+dist
+
 # Local secrets — never commit API keys.
 # The demo reads its key from the browser (localStorage) or an optional
 # window.CLAUDE_API_KEY set by one of these git-ignored files.
